@@ -1,0 +1,28 @@
+﻿@model List<KonferansPortal.Models.Konferans>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<table class="table">
+    <!--tbody>
+        @foreach (var item in Model) {
+            <tr>
+                <td>
+                    <div>
+                        <img src=@item.ImageUrl alt="Alternate Text" />
+                    </div>
+                </td>
+
+                <td>
+                    <div>
+                        <h4>@Html.Display(item.Name)</h4>
+                        <h5>@Html.Display(@item.Description)</h5>
+                    </div>
+                </td>
+            </tr>
+        }
+    </!--tbody>
+</table>

@@ -1,0 +1,16 @@
+﻿@model Uye
+
+<form asp-action="Login" method="post">
+    <div>
+        <label asp-for="Email">Mail Adresi</label>
+        <input asp-for="Email" />
+        <span asp-validation-for="Email"></span>
+    </div>
+    <div>
+        <label asp-for="Password">Şifre</label>
+        <input asp-for="Password" type="password" />
+        <span asp-validation-for="Password"></span>
+    </div>
+
+    <button type="submit">Login</button>
+</form>
