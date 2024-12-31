@@ -1,12 +1,17 @@
 ﻿namespace KonferansPortal.Models
 {
-    public class Duyurular
+    public class KonferansDuyuru
     {
+        public Konferans Konferans { get; set; }
         public String Title { get; set; }
         public String Content { get; set; }
         public int Id { set; get; }
 
         public DateTime Date { get; set; }
-        public String ImageUrl { get; set; }
+        public Uye Publisher { get; set; }
+        public byte[]? FileData { get; set; }
+
+
+
     }
 }

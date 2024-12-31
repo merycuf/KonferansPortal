@@ -1,4 +1,5 @@
-﻿namespace KonferansPortal.Models
+﻿
+namespace KonferansPortal.Models
 {
     public class Admin : Uye
     {

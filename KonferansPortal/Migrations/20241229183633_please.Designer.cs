@@ -4,6 +4,7 @@ using KonferansPortal.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KonferansPortal.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241229183633_please")]
+    partial class please
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,32 +40,19 @@ namespace KonferansPortal.Migrations
                     b.ToTable("EgitmenKonferans");
                 });
 
-            modelBuilder.Entity("KonferansPortal.Models.Duyurular", b =>
+            modelBuilder.Entity("KatilimciKonferans", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<string>("KatilimcilarId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("KatilinanKonferansId")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.HasKey("KatilimcilarId", "KatilinanKonferansId");
 
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.HasIndex("KatilinanKonferansId");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Duyurular");
+                    b.ToTable("KatilimciKonferans");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.Konferans", b =>
@@ -113,8 +103,8 @@ namespace KonferansPortal.Migrations
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)");
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -123,9 +113,6 @@ namespace KonferansPortal.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<int?>("KonferansId")
-                        .HasColumnType("int");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -144,6 +131,10 @@ namespace KonferansPortal.Migrations
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
@@ -172,8 +163,6 @@ namespace KonferansPortal.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("KonferansId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -330,6 +319,13 @@ namespace KonferansPortal.Migrations
                     b.HasDiscriminator().HasValue("Egitmen");
                 });
 
+            modelBuilder.Entity("KonferansPortal.Models.Katilimci", b =>
+                {
+                    b.HasBaseType("KonferansPortal.Models.Uye");
+
+                    b.HasDiscriminator().HasValue("Katilimci");
+                });
+
             modelBuilder.Entity("EgitmenKonferans", b =>
                 {
                     b.HasOne("KonferansPortal.Models.Konferans", null)
@@ -345,11 +341,19 @@ namespace KonferansPortal.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("KonferansPortal.Models.Uye", b =>
+            modelBuilder.Entity("KatilimciKonferans", b =>
                 {
+                    b.HasOne("KonferansPortal.Models.Katilimci", null)
+                        .WithMany()
+                        .HasForeignKey("KatilimcilarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("KonferansPortal.Models.Konferans", null)
-                        .WithMany("Katilimcilar")
-                        .HasForeignKey("KonferansId");
+                        .WithMany()
+                        .HasForeignKey("KatilinanKonferansId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -401,11 +405,6 @@ namespace KonferansPortal.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("KonferansPortal.Models.Konferans", b =>
-                {
-                    b.Navigation("Katilimcilar");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,4 +1,4 @@
-﻿@model Uye
+﻿@model LoginViewModel
 
 <form asp-action="Login" method="post">
     <div>
@@ -10,6 +10,11 @@
         <label asp-for="Password">Şifre</label>
         <input asp-for="Password" type="password" />
         <span asp-validation-for="Password"></span>
+    </div>
+    <div class="checkbox">
+        <label>
+            <input asp-for="RememberMe" /> @Html.DisplayNameFor(m => m.RememberMe)
+        </label>
     </div>
 
     <button type="submit">Login</button>

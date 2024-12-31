@@ -14,7 +14,7 @@
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">KonferansPortal</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                        aria-expanded="false" aria-label="Toggle navigation">6,
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
@@ -25,8 +25,39 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Konferans" asp-action="Index">Konferanslar</a>
+                        </li>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <form method="post" asp-controller="Uye" asp-action="Logout" id="logoutForm" class="form-inline">
+                                <button type="submit" class="btn btn-link text-dark nav-link">Logout</button>
+                            </form>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li>
+                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index" id="adminPage" class="form-inline">Profil</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li>
+                                <a class="nav-link text-dark" asp-controller="Uye" asp-action="Details" id="uyeDetails" class="form-inline">Profil</a>
+                                </li>
+                            }
+                            
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Uye" asp-action="Login">Giriş Yap</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Uye" asp-action="Register">Üye Ol</a>
+                            </li>
+                        }
                     </ul>
-                </div>
+                 </div>
             </div>
         </nav>
     </header>

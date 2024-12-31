@@ -1,9 +1,25 @@
-﻿@model Uye
+﻿@model RegisterViewModel
+
 
 <form asp-action="Register" method="post">
     <div>
+        <label asp-for="Name">Ad</label>
+        <input asp-for="Name" />
+        <span asp-validation-for="Name"></span>
+    </div>
+    <div>
+        <label asp-for="Surname">Soyad</label>
+        <input asp-for="Surname" />
+        <span asp-validation-for="Surname"></span>
+    </div>
+    <div>
+        <label asp-for="Phone">Telefon</label>
+        <input asp-for="Phone" formnovalidate="formnovalidate"/>
+        <span asp-validation-for="Phone"></span>
+    </div>
+    <div>
         <label asp-for="Email">Mail Adresi</label>
-        <input asp-for="Email" />
+        <input asp-for="Email"/>
         <span asp-validation-for="Email"></span>
     </div>
     <div>
@@ -11,6 +27,15 @@
         <input asp-for="Password" type="password" />
         <span asp-validation-for="Password"></span>
     </div>
-
+    <div>
+        <label asp-for="ConfirmPassword">Şifre Doğrulama</label>
+        <input asp-for="ConfirmPassword" type="password" />
+        <span asp-validation-for="ConfirmPassword"></span>
+    </div>
+    
     <button type="submit">Register</button>
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

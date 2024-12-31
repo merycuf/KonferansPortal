@@ -1,0 +1,93 @@
+﻿using KonferansPortal.Data;
+using KonferansPortal.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace KonferansPortal.Controllers
+{
+    public class DuyurularController : Controller
+    {
+        private readonly AppDbContext _context;
+
+        public DuyurularController(AppDbContext context)
+        {
+            _context = context;
+        }
+        // GET: DuyurularController
+        public ActionResult Index()
+        {
+            return View();
+        }
+
+        // GET: DuyurularController/Details/5
+        public ActionResult Details(int id)
+        {
+            return View(id);
+        }
+
+        // GET: DuyurularController/Create
+        [Authorize(Roles = "Admin")]
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: DuyurularController/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Title,Content,Date,ImageUrl")] Duyurular duyuru)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(duyuru);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(duyuru);
+        }
+
+        // GET: DuyurularController/Edit/5
+        public ActionResult Edit(int id)
+        {
+            return View();
+        }
+
+        // POST: DuyurularController/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, IFormCollection collection)
+        {
+            try
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View(id);
+            }
+        }
+
+        // GET: DuyurularController/Delete/5
+        public ActionResult Delete(int id)
+        {
+            return View();
+        }
+
+        // POST: DuyurularController/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Delete(int id, IFormCollection collection)
+        {
+            try
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+            }
+        }
+    }
+}

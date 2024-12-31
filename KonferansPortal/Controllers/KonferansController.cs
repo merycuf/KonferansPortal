@@ -1,22 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KonferansPortal.Data;
 using KonferansPortal.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace KonferansPortal.Controllers
 {
     public class KonferansController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IAuthorizationService _authorizationService;
 
-        public KonferansController(AppDbContext context)
+        public KonferansController(AppDbContext context, IAuthorizationService authorizationService)
         {
             _context = context;
+            _authorizationService = authorizationService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> KonferansMainView(int konferansId)
+        {
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, null, new IsKatilimciRequirement());
+
+            if (!authorizationResult.Succeeded)
+            {
+                authorizationResult = await _authorizationService.AuthorizeAsync(User, null, new IsEgitmenRequirement());
+                if (!authorizationResult.Succeeded)
+                    return Forbid();
+            }
+
+            var konferans = await _context.Konferanslar
+                .Include(k => k.Katilimcilar)
+                .FirstOrDefaultAsync(k => k.Id == konferansId);
+         
+            if (konferans == null)
+            {
+                konferans = await _context.Konferanslar
+                .Include(k => k.Egitmenler)
+                .FirstOrDefaultAsync(k => k.Id == konferansId);
+                if (konferans == null)
+                {
+                    return NotFound();
+                }
+            }
+
+            return View(konferans);
         }
 
         // GET: Konferans
@@ -44,6 +72,8 @@ namespace KonferansPortal.Controllers
         }
 
         // GET: Konferans/Create
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
@@ -66,6 +96,7 @@ namespace KonferansPortal.Controllers
         }
 
         // GET: Konferans/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -117,6 +148,7 @@ namespace KonferansPortal.Controllers
         }
 
         // GET: Konferans/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
