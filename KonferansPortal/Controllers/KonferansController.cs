@@ -70,7 +70,7 @@ namespace KonferansPortal.Controllers
                     konferans.Katilimcilar = new List<Uye>();
                 }
 
-                else if (konferans.Katilimcilar.Contains(currentUser))
+                else if (konferans.Katilimcilar.Any(k => k.Id == currentUser.Id))
                 {
                     return RedirectToAction("KonferansMainView", "Konferans");
                 }
@@ -96,19 +96,29 @@ namespace KonferansPortal.Controllers
             {
                 return NotFound();
             }
+
             var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
             if (currentUser != null)
             {
-                if (konferans.Katilimcilar.Contains(currentUser))
+                var claims = await _userManager.GetClaimsAsync(currentUser);
+                var isKatilimciClaim = claims.FirstOrDefault(c => c.Type == "IsKatilimci");
+                if (isKatilimciClaim != null)
                 {
-                    var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "true"));
+                    await _userManager.RemoveClaimAsync(currentUser, isKatilimciClaim);
+                }
+                if (konferans.Katilimcilar == null)
+                {
+                    konferans.Katilimcilar = new List<Uye>();
+                }
+                if (konferans.Katilimcilar.Any(k => k.Id == currentUser.Id))
+                {
+                    await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "true"));
                 }
                 else
                 {
-                    var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "false"));
+                    await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "false"));
                 }
             }
-
             return View(konferans);
         }
 

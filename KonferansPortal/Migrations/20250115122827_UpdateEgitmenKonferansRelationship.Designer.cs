@@ -4,6 +4,7 @@ using KonferansPortal.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KonferansPortal.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250115122827_UpdateEgitmenKonferansRelationship")]
+    partial class UpdateEgitmenKonferansRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -187,15 +190,15 @@ namespace KonferansPortal.Migrations
 
             modelBuilder.Entity("KonferansUye", b =>
                 {
-                    b.Property<int>("KonferansId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UyeId")
+                    b.Property<string>("KatilimcilarId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("KonferansId", "UyeId");
+                    b.Property<int>("katilinanKonferanslarId")
+                        .HasColumnType("int");
 
-                    b.HasIndex("UyeId");
+                    b.HasKey("KatilimcilarId", "katilinanKonferanslarId");
+
+                    b.HasIndex("katilinanKonferanslarId");
 
                     b.ToTable("KonferansUye");
                 });
@@ -357,15 +360,15 @@ namespace KonferansPortal.Migrations
 
             modelBuilder.Entity("KonferansUye", b =>
                 {
-                    b.HasOne("KonferansPortal.Models.Konferans", null)
+                    b.HasOne("KonferansPortal.Models.Uye", null)
                         .WithMany()
-                        .HasForeignKey("KonferansId")
+                        .HasForeignKey("KatilimcilarId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("KonferansPortal.Models.Uye", null)
+                    b.HasOne("KonferansPortal.Models.Konferans", null)
                         .WithMany()
-                        .HasForeignKey("UyeId")
+                        .HasForeignKey("katilinanKonferanslarId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
