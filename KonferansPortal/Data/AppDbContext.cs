@@ -10,6 +10,15 @@ namespace KonferansPortal.Data
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Configure the one-to-many relationship
+            modelBuilder.Entity<Egitmen>()
+                .HasMany(e => e.EgitilenKonferans)
+                .WithMany(k => k.Egitmenler);
+        }
         public DbSet<KonferansPortal.Models.Konferans> Konferanslar { get; set; }
         public DbSet<KonferansPortal.Models.Duyurular> Duyurular { get; set; }
 

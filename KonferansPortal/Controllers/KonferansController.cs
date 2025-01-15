@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using KonferansPortal.Data;
 using KonferansPortal.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace KonferansPortal.Controllers
 {
@@ -10,17 +12,19 @@ namespace KonferansPortal.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IAuthorizationService _authorizationService;
+        private readonly UserManager<Uye> _userManager;
 
-        public KonferansController(AppDbContext context, IAuthorizationService authorizationService)
+        public KonferansController(AppDbContext context, IAuthorizationService authorizationService, UserManager<Uye> userManager)
         {
             _context = context;
             _authorizationService = authorizationService;
+            _userManager = userManager;
         }
 
-        [HttpGet]
+        [HttpGet] 
         public async Task<IActionResult> KonferansMainView(int konferansId)
         {
-            var authorizationResult = await _authorizationService.AuthorizeAsync(User, null, new IsKatilimciRequirement());
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, null, new IsKatilimciRequirement());//patlıyo
 
             if (!authorizationResult.Succeeded)
             {
@@ -53,6 +57,31 @@ namespace KonferansPortal.Controllers
             return View(await _context.Konferanslar.ToListAsync());
         }
 
+        [HttpGet]
+        public async Task<IActionResult> KayitOl(int id)
+        {
+            var konferans = await _context.Konferanslar
+                .FirstOrDefaultAsync(m => m.Id == id);
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+            if(currentUser != null)
+            {
+                if (konferans.Katilimcilar == null)
+                {
+                    konferans.Katilimcilar = new List<Uye>();
+                }
+
+                else if (konferans.Katilimcilar.Contains(currentUser))
+                {
+                    return RedirectToAction("KonferansMainView", "Konferans");
+                }
+
+                konferans.Katilimcilar.Add(currentUser);
+                await _context.SaveChangesAsync();
+                return View();
+            }
+            return RedirectToAction("Login", "Uye");
+        }
+
         // GET: Konferans/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -67,7 +96,49 @@ namespace KonferansPortal.Controllers
             {
                 return NotFound();
             }
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+            if (currentUser != null)
+            {
+                if (konferans.Katilimcilar.Contains(currentUser))
+                {
+                    var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "true"));
+                }
+                else
+                {
+                    var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "false"));
+                }
+            }
 
+            return View(konferans);
+        }
+
+        // POST: Konferans/Details/5
+        [HttpPost]
+        public async Task<IActionResult> Details(Uye model, int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var konferans = await _context.Konferanslar
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (konferans == null)
+            {
+                return NotFound();
+            }
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+            if (currentUser != null)
+            {
+                if (konferans.Katilimcilar.Contains(currentUser))
+                {
+                    return RedirectToAction("KonferansMainView", "Konferans");
+                }
+                else
+                {
+                    var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "false"));
+                }
+            }
             return View(konferans);
         }
 
