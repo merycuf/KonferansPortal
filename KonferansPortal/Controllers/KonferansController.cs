@@ -21,7 +21,8 @@ namespace KonferansPortal.Controllers
             _userManager = userManager;
         }
 
-        [HttpGet] 
+        [HttpGet]
+        [Authorize(Policy = "IsKatilimci")]
         public async Task<IActionResult> KonferansMainView(int konferansId)
         {
             var authorizationResult = await _authorizationService.AuthorizeAsync(User, null, new IsKatilimciRequirement());//patlıyo
@@ -60,7 +61,7 @@ namespace KonferansPortal.Controllers
         [HttpGet]
         public async Task<IActionResult> KayitOl(int id)
         {
-            var konferans = await _context.Konferanslar
+            var konferans = await _context.Konferanslar.Include(k => k.Katilimcilar)
                 .FirstOrDefaultAsync(m => m.Id == id);
             var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
             if(currentUser != null)
@@ -90,7 +91,7 @@ namespace KonferansPortal.Controllers
                 return NotFound();
             }
 
-            var konferans = await _context.Konferanslar
+            var konferans = await _context.Konferanslar.Include(k => k.Katilimcilar)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (konferans == null)
             {
@@ -142,7 +143,8 @@ namespace KonferansPortal.Controllers
             {
                 if (konferans.Katilimcilar.Contains(currentUser))
                 {
-                    return RedirectToAction("KonferansMainView", "Konferans");
+                    var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "true"));
+                    return RedirectToAction("KonferansMainView", "Konferans", id);
                 }
                 else
                 {
