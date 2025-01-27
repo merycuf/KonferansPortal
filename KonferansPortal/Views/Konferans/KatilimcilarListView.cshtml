@@ -1,0 +1,22 @@
+﻿@model Konferans
+
+@{
+    ViewData["Title"] = "KatilimcilarListView";
+}
+<h2>@Model.Name</h2>
+<h2>Katılımcılar</h2>
+
+<table class="table">
+    <tbody>
+        @foreach (var item in Model.Katilimcilar)
+        {
+            <tr>
+                <td>
+                    <div>
+                        <h4>@item.Name + @item.Surname</h4>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

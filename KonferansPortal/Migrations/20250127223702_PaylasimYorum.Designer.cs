@@ -4,6 +4,7 @@ using KonferansPortal.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KonferansPortal.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250127223702_PaylasimYorum")]
+    partial class PaylasimYorum
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -100,7 +103,10 @@ namespace KonferansPortal.Migrations
             modelBuilder.Entity("KonferansPortal.Models.Paylasim", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
@@ -115,6 +121,9 @@ namespace KonferansPortal.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("KonferansId")
+                        .HasColumnType("int");
+
                     b.Property<string>("PublisherId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -124,37 +133,12 @@ namespace KonferansPortal.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("KonferansId");
 
                     b.HasIndex("PublisherId");
 
                     b.ToTable("Paylasim");
-                });
-
-            modelBuilder.Entity("KonferansPortal.Models.Tartisma", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PublisherId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PublisherId");
-
-                    b.ToTable("Tartisma");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.Uye", b =>
@@ -268,9 +252,6 @@ namespace KonferansPortal.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int?>("TartismaId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CevaplananId");
@@ -278,8 +259,6 @@ namespace KonferansPortal.Migrations
                     b.HasIndex("PaylasimId");
 
                     b.HasIndex("PublisherId");
-
-                    b.HasIndex("TartismaId");
 
                     b.ToTable("Yorum");
                 });
@@ -456,34 +435,15 @@ namespace KonferansPortal.Migrations
 
             modelBuilder.Entity("KonferansPortal.Models.Paylasim", b =>
                 {
-                    b.HasOne("KonferansPortal.Models.Konferans", "PaylasilanKonferans")
+                    b.HasOne("KonferansPortal.Models.Konferans", null)
                         .WithMany("Paylasimlar")
-                        .HasForeignKey("Id");
+                        .HasForeignKey("KonferansId");
 
                     b.HasOne("KonferansPortal.Models.Uye", "Publisher")
                         .WithMany()
                         .HasForeignKey("PublisherId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("PaylasilanKonferans");
-
-                    b.Navigation("Publisher");
-                });
-
-            modelBuilder.Entity("KonferansPortal.Models.Tartisma", b =>
-                {
-                    b.HasOne("KonferansPortal.Models.Konferans", "Konferans")
-                        .WithMany("Tartismalar")
-                        .HasForeignKey("Id");
-
-                    b.HasOne("KonferansPortal.Models.Uye", "Publisher")
-                        .WithMany()
-                        .HasForeignKey("PublisherId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Konferans");
 
                     b.Navigation("Publisher");
                 });
@@ -503,10 +463,6 @@ namespace KonferansPortal.Migrations
                         .HasForeignKey("PublisherId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("KonferansPortal.Models.Tartisma", null)
-                        .WithMany("Yorumlar")
-                        .HasForeignKey("TartismaId");
 
                     b.Navigation("Cevaplanan");
 
@@ -582,16 +538,9 @@ namespace KonferansPortal.Migrations
             modelBuilder.Entity("KonferansPortal.Models.Konferans", b =>
                 {
                     b.Navigation("Paylasimlar");
-
-                    b.Navigation("Tartismalar");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.Paylasim", b =>
-                {
-                    b.Navigation("Yorumlar");
-                });
-
-            modelBuilder.Entity("KonferansPortal.Models.Tartisma", b =>
                 {
                     b.Navigation("Yorumlar");
                 });

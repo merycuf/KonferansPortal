@@ -1,0 +1,20 @@
+﻿@model KonferansPortal.Models.Paylasim
+@{
+}
+
+<h1>PaylasimEkle</h1>
+<form method="post" asp-action="PaylasimEkle" enctype ="multipart/form-data">
+    <div>
+        <label asp-for="Title">Başlık</label>
+        <input asp-for="Title" />
+    </div>
+    <div>
+        <label asp-for="Content">İçerik</label>
+        <input asp-for="Content" />
+    </div>
+    <div>
+        <label>Dosya</label>
+        <input type="file" name="File" class="form-control-file" />
+    </div>
+    <button type="submit">Paylaşım Ekle</button>
+</form>

@@ -32,12 +32,25 @@ namespace KonferansPortal.Data
                     j => j.HasOne<Uye>().WithMany().HasForeignKey("UyeId"),
                     j => j.HasOne<Konferans>().WithMany().HasForeignKey("KonferansId"));
 
+            // Configure the one-to-many relationship between Konferans to Tartisma
+            modelBuilder.Entity<Konferans>()
+                .HasMany(k => k.Tartismalar)
+                .WithOne(t => t.Konferans)
+                .HasForeignKey(e => e.Id)
+                .IsRequired(false);
+
+            modelBuilder.Entity<Konferans>()
+                .HasMany(k => k.Paylasimlar)
+                .WithOne(p => p.PaylasilanKonferans)
+                .HasForeignKey(e => e.Id)
+                .IsRequired(false);
         }
 
-        public DbSet<KonferansPortal.Models.Konferans> Konferanslar { get; set; }
-        public DbSet<KonferansPortal.Models.Duyurular> Duyurular { get; set; }
-
-        public DbSet<KonferansPortal.Models.Uye> Uyeler { get; set; }
-        public DbSet<KonferansPortal.Models.Egitmen> Egitmenler { get; set; }
+        public DbSet<Konferans> Konferanslar { get; set; }
+        public DbSet<Duyurular> Duyurular { get; set; }
+        public DbSet<Uye> Uyeler { get; set; }
+        public DbSet<Egitmen> Egitmenler { get; set; }
+        public DbSet<Tartisma> Tartisma { get; set; }
+        public DbSet<Paylasim> Paylasim { get; set; }
     }
 }

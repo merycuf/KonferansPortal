@@ -10,6 +10,8 @@
         public List<Egitmen> Egitmenler { set; get; }
         public DateTime StartDate { set; get; }
         public DateTime EndDate { set; get; }
-        public string ImageUrl { set; get; }
+        public string? ImageUrl { set; get; }
+        public List<Paylasim>? Paylasimlar { set; get; }
+        public List<Tartisma>? Tartismalar { set; get; } 
     }
 }

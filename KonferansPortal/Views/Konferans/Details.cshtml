@@ -58,7 +58,7 @@
         else if (isUye && ( isKatilimci || isEgitmen))
         {
             <dd>
-                <a class="nav-link text-dark" asp-action="KonferansMainView" id="uyeDetails" class="form-inline">Konferans Sayfasına Git</a>
+                <a class="nav-link text-dark" asp-action="KonferansMainView" asp-route-id="@Model.Id" class="form-inline">Konferans Sayfasına Git</a>
             </dd>
         }
         else{

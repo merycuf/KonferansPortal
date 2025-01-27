@@ -16,6 +16,7 @@ namespace KonferansPortal
         private readonly UserManager<Uye> _userManager;
         private readonly ILogger<IsKatilimciHandler> _logger;
 
+
         public IsKatilimciHandler(AppDbContext context, UserManager<Uye> userManager, ILogger<IsKatilimciHandler> logger)
         {
             _context = context;
@@ -30,39 +31,36 @@ namespace KonferansPortal
                 return;
             }
 
-            if (context.Resource is AuthorizationFilterContext authContext)
+            if (!(context.Resource is HttpContext httpContext)) throw new InvalidOperationException("DefaultHttpContext expected");
+            
+            //var routeValues = context.Resource.
+            //if (routeValues.TryGetValue("konferansId", out var konferansIdValue) && int.TryParse(konferansIdValue.ToString(), out int konferansId))
+            if (Int32.TryParse((String)httpContext.Request.RouteValues["id"], out int konferansId))
             {
-                var routeValues = authContext.RouteData.Values;
-                if (routeValues.TryGetValue("konferansId", out var konferansIdValue) && int.TryParse(konferansIdValue.ToString(), out int konferansId))
+                var user = await _userManager.GetUserAsync(context.User);
+                if (user == null)
                 {
-                    var user = await _userManager.GetUserAsync(context.User);
-                    if (user == null)
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    var konferans = await _context.Konferanslar
-                        .Include(k => k.Katilimcilar)
-                        .FirstOrDefaultAsync(k => k.Id == konferansId);
+                var konferans = await _context.Konferanslar
+                    .Include(k => k.Katilimcilar)
+                    .FirstOrDefaultAsync(k => k.Id == konferansId);
 
-                    if (konferans != null && konferans.Katilimcilar.Any(k => k.Id == user.Id))
-                    {
-                        context.Succeed(requirement);
-                    }
-                    else
-                    {
-                        _logger.LogWarning("User {UserId} is not a participant of conference {KonferansId}", user.Id, konferansId);
-                    }
+                if (konferans != null && konferans.Katilimcilar.Any(k => k.Id == user.Id))
+                {
+                    context.Succeed(requirement);
                 }
                 else
                 {
-                    _logger.LogWarning("Missing or invalid konferansId in route data");
+                    _logger.LogWarning("User {UserId} is not a participant of conference {KonferansId}", user.Id, konferansId);
                 }
             }
             else
             {
-                _logger.LogWarning("Authorization context resource is not an AuthorizationFilterContext");
+                _logger.LogWarning("Missing or invalid konferansId in route data");
             }
+
         }
     }
 }

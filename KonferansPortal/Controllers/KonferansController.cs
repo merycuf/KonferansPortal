@@ -23,26 +23,24 @@ namespace KonferansPortal.Controllers
 
         [HttpGet]
         [Authorize(Policy = "IsKatilimci")]
-        public async Task<IActionResult> KonferansMainView(int konferansId)
+        public async Task<IActionResult> KonferansMainView(int id)
         {
-            var authorizationResult = await _authorizationService.AuthorizeAsync(User, null, new IsKatilimciRequirement());//patlıyo
+            /*var authorizationResult = await _authorizationService.AuthorizeAsync(User, null, new IsKatilimciRequirement());//patlıyo
 
             if (!authorizationResult.Succeeded)
             {
                 authorizationResult = await _authorizationService.AuthorizeAsync(User, null, new IsEgitmenRequirement());
                 if (!authorizationResult.Succeeded)
                     return Forbid();
-            }
+            }*/
 
-            var konferans = await _context.Konferanslar
-                .Include(k => k.Katilimcilar)
-                .FirstOrDefaultAsync(k => k.Id == konferansId);
+            var konferans = await _context.Konferanslar.FirstOrDefaultAsync(k => k.Id == id);
          
             if (konferans == null)
             {
                 konferans = await _context.Konferanslar
                 .Include(k => k.Egitmenler)
-                .FirstOrDefaultAsync(k => k.Id == konferansId);
+                .FirstOrDefaultAsync(k => k.Id == id);
                 if (konferans == null)
                 {
                     return NotFound();
@@ -144,7 +142,7 @@ namespace KonferansPortal.Controllers
                 if (konferans.Katilimcilar.Contains(currentUser))
                 {
                     var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "true"));
-                    return RedirectToAction("KonferansMainView", "Konferans", id);
+                    return RedirectToAction("KonferansMainView", "Konferans", konferans.Id);
                 }
                 else
                 {
@@ -163,8 +161,6 @@ namespace KonferansPortal.Controllers
         }
 
         // POST: Konferans/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Id,Description,Price,StartDate,EndDate,ImageUrl")] Konferans konferans)
@@ -196,8 +192,6 @@ namespace KonferansPortal.Controllers
         }
 
         // POST: Konferans1/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Name,Id,Description,Price,StartDate,EndDate,ImageUrl")] Konferans konferans)
@@ -268,5 +262,50 @@ namespace KonferansPortal.Controllers
         {
             return _context.Konferanslar.Any(e => e.Id == id);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> PaylasimEkle(IFormFile File)
+        {
+            if (File != null)
+            {
+                var extent = Path.GetExtension(File.FileName);
+                var randomName = ($"{Guid.NewGuid()}{extent}");
+                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\img", randomName);
+
+                using (var stream = new FileStream(path, FileMode.Create))
+                {
+                    await File.CopyToAsync(stream);
+                }
+            }
+            return View();
+        }
+        public void dosyaIndir() {
+
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Tartismalar(int konferansId)
+        {
+            Konferans? result = await _context.Konferanslar.FindAsync(konferansId);
+            if(result == null)
+            {
+                return NotFound();
+            }
+            return View(result.Tartismalar);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Katilimcilar(int konferansId)
+        {
+            Konferans? result = await _context.Konferanslar.FindAsync(konferansId);
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return View(result);
+        }
+
     }
+    
+
 }

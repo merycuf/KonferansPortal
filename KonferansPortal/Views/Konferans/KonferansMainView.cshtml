@@ -4,7 +4,39 @@
     ViewData["Title"] = "KonferansMainView";
 }
 
-<h1>
-    @Html.DisplayNameFor(model => model.Name)
-</h1>
+<h1>@Model.Name</h1>
 
+<div>
+    <ul>
+        <li><a class="nav-link text-dark" asp-action="KatilimcilarListView" asp-route-id="@Model.Id">Katılımcılar</a></li>
+        <li><a class="nav-link text-dark" asp-action="Duyurular" asp-route-id="@Model.Id">Duyurular</a></li>
+        <li><a class="nav-link text-dark" asp-action="Tartısmalar" asp-route-id="@Model.Id">Tartışmalar</a></li>
+    </ul>
+</div>
+
+<div>
+    @if(User.Identity.IsAuthenticated && User.HasClaim(c => c.Type == "IsEgitmen" && c.Value == "true"))
+    {
+        <button class="btn btn-primary" onclick="PaylasimEkle()">Paylaşım Ekle</button>
+    }
+    <table class="table">
+        <tbody>
+            @if (Model.Paylasimlar != null)
+                @foreach (var item in Model.Paylasimlar)
+                {
+                    <tr onclick="window.location.href='@Url.Action("Paylasim", "Konferans", new { id = item.Id })'" style="cursor: pointer;">
+
+                        <td>
+                            <div onClick ="dosyaIndir()">
+                                <h4>@item.Title</h4>
+                                <h5>@item.Content</h5>
+                                <h6>@item.Publisher</h6>
+                                <h6>@item.Date</h6>
+                                <h6 onClick="dosyaIndir()">@item.FileName</h6>
+                            </div>
+                        </td>
+                    </tr>
+                }
+        </tbody>
+    </table>
+</div>

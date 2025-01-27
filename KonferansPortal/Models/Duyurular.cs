@@ -7,6 +7,6 @@
         public int Id { set; get; }
 
         public DateTime Date { get; set; }
-        public String ImageUrl { get; set; }
+        public String? ImageUrl { get; set; }
     }
 }
