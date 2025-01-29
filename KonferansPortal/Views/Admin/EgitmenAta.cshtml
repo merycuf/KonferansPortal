@@ -1,0 +1,33 @@
+﻿@model dynamic
+
+@{
+    ViewData["Title"] = "EgitmenAta";
+}
+
+<h1>Eğitmen Ata</h1>
+
+<form method="post">
+    <div>
+        <h5>Eğitmen Atanacak Konferans</h5>
+        <select id="konferansCmbBox" >
+        @foreach (var Konferans in Model.Konferanslar)
+        {
+                <option value="@Konferans.Name"> @Konferans.Name </option>
+        }
+    </select>
+    </div>
+
+    <div>
+        <h5>Atanacak Eğitmen</h5>
+        <datalist id="egitmenCmbBox">
+            @foreach (var Egitmen in Model.Egitmenler)
+            {
+                <option value="@Egitmen.Name"></option>
+            }
+        </datalist>
+        <input autoComplete="off" list="egitmenCmbBox" />
+    </div>
+    <button type="submit">Ata</button>
+</form>
+
+

@@ -30,10 +30,11 @@ namespace KonferansPortal
                 return;
             }
 
-            if (context.Resource is AuthorizationFilterContext authContext)
+            if (!(context.Resource is HttpContext httpContext)) throw new InvalidOperationException("DefaultHttpContext expected");
             {
-                var routeValues = authContext.RouteData.Values;
-                if (routeValues.TryGetValue("konferansId", out var konferansIdValue) && int.TryParse(konferansIdValue.ToString(), out int konferansId))
+                //var routeValues = authContext.RouteData.Values;
+                //if (routeValues.TryGetValue("konferansId", out var konferansIdValue) && int.TryParse(konferansIdValue.ToString(), out int konferansId))
+                if (Int32.TryParse((String)httpContext.Request.RouteValues["id"], out int konferansId))
                 {
                     var user = await _userManager.GetUserAsync(context.User);
                     if (user == null)
@@ -51,17 +52,13 @@ namespace KonferansPortal
                     }
                     else
                     {
-                        _logger.LogWarning("User {UserId} is not a trainer of conference {KonferansId}", user.Id, konferansId);
+                        _logger.LogWarning("User {UserId} is not a participant of conference {KonferansId}", user.Id, konferansId);
                     }
                 }
                 else
                 {
                     _logger.LogWarning("Missing or invalid konferansId in route data");
                 }
-            }
-            else
-            {
-                _logger.LogWarning("Authorization context resource is not an AuthorizationFilterContext");
             }
         }
     }

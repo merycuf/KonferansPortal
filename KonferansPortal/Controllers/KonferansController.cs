@@ -23,6 +23,7 @@ namespace KonferansPortal.Controllers
 
         [HttpGet]
         [Authorize(Policy = "IsKatilimci")]
+        [Authorize(Policy = "IsEgitmen")]
         public async Task<IActionResult> KonferansMainView(int id)
         {
             /*var authorizationResult = await _authorizationService.AuthorizeAsync(User, null, new IsKatilimciRequirement());//patlıyo
@@ -38,13 +39,7 @@ namespace KonferansPortal.Controllers
          
             if (konferans == null)
             {
-                konferans = await _context.Konferanslar
-                .Include(k => k.Egitmenler)
-                .FirstOrDefaultAsync(k => k.Id == id);
-                if (konferans == null)
-                {
-                    return NotFound();
-                }
+                return NotFound();
             }
 
             return View(konferans);
@@ -139,6 +134,16 @@ namespace KonferansPortal.Controllers
             var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
             if (currentUser != null)
             {
+                if (konferans.Egitmenler.Contains(currentUser))
+                {
+                    var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsEgitmen", "true"));
+                    return RedirectToAction("KonferansMainView", "Konferans", konferans.Id);
+                }
+                else
+                {
+                    var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsEgitmen", "false"));
+                }
+
                 if (konferans.Katilimcilar.Contains(currentUser))
                 {
                     var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "true"));
@@ -284,9 +289,9 @@ namespace KonferansPortal.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Tartismalar(int konferansId)
+        public async Task<IActionResult> Tartismalar(int id)
         {
-            Konferans? result = await _context.Konferanslar.FindAsync(konferansId);
+            Konferans? result = await _context.Konferanslar.FindAsync(id);
             if(result == null)
             {
                 return NotFound();
@@ -295,9 +300,13 @@ namespace KonferansPortal.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Katilimcilar(int konferansId)
+        [Authorize(Policy = "IsKatilimci")]
+        [Authorize(Policy = "IsEgitmen")]
+        public async Task<IActionResult> KatilimcilarListView(int id)
         {
-            Konferans? result = await _context.Konferanslar.FindAsync(konferansId);
+            var result = await _context.Konferanslar
+                .Include(k => k.Katilimcilar)
+                .Include(k => k.Egitmenler).FirstOrDefaultAsync(k => k.Id == id);
             if (result == null)
             {
                 return NotFound();
