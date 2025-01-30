@@ -1,0 +1,30 @@
+﻿@model List<KonferansPortal.Models.Konferans>
+
+@{
+    ViewData["Title"] = "Konferanslarim";
+}
+
+<h1>Konferanslarim</h1>
+
+<table class="table">
+    <tbody>
+        @if(Model != null)
+            @foreach (var item in Model)
+            {
+                <tr onclick="window.location.href='@Url.Action("Details", "Konferans", new { id = item.Id })'" style="cursor: pointer;">
+                    <td>
+                        <div>
+                            <img src="@item.ImageUrl" alt="@item.Name" style="max-width: 100px; max-height: 100px;" />
+                        </div>
+                    </td>
+
+                    <td>
+                        <div>
+                            <h4>@item.Name</h4>
+                            <h5>@item.Description</h5>
+                        </div>
+                    </td>
+                </tr>
+            }
+    </tbody>
+</table>

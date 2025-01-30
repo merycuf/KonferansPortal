@@ -1,46 +1,31 @@
-﻿@model KonferansPortal.Models.Tartisma
+﻿@model KonferansPortal.Models.TartismaViewModel
 
 @{
     ViewData["Title"] = "CreateTartisma";
 }
 
-<h1>CreateTartisma</h1>
+<h1>Tartışma Oluştur</h1>
 
 <h4>Tartisma</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="CreateTartisma">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <form asp-action="CreateTartisma" method="post">
             <div class="form-group">
-                <label asp-for="Id" class="control-label"></label>
-                <select asp-for="Id" class ="form-control" asp-items="ViewBag.Id"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
+                <label asp-for="Title"></label>
                 <input asp-for="Title" class="form-control" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Content" class="control-label"></label>
-                <input asp-for="Content" class="form-control" />
+                <label asp-for="Content"></label>
+                <textarea asp-for="Content" class="form-control"></textarea>
                 <span asp-validation-for="Content" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Date" class="control-label"></label>
-                <input asp-for="Date" class="form-control" />
-                <span asp-validation-for="Date" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

@@ -4,6 +4,7 @@ using KonferansPortal.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,7 @@ builder.Services.AddIdentity<Uye, IdentityRole>()
 
 builder.Services.AddScoped<IAuthorizationHandler, IsKatilimciHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, IsEgitmenHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, IsEgitmenOrKatilimciHandler>();
 
 // Add Authentication and Authorization
 builder.Services.AddAuthentication();
@@ -28,6 +30,8 @@ builder.Services.AddAuthorization(options =>
         policy.Requirements.Add(new IsKatilimciRequirement()));
     options.AddPolicy("IsEgitmen", policy =>
         policy.Requirements.Add(new IsEgitmenRequirement()));
+    options.AddPolicy("IsEgitmenOrKatilimci", policy =>
+        policy.Requirements.Add(new IsEgitmenOrKatilimciRequirement()));
 });
 
 
@@ -54,7 +58,8 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var userManager = services.GetRequiredService<UserManager<Uye>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    await SeedData.Initialize(userManager, roleManager);
+    var context = services.GetRequiredService<AppDbContext>();
+    await SeedData.Initialize(userManager, roleManager, context);
 }
 
 app.MapControllerRoute(

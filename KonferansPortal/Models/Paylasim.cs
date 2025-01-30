@@ -8,9 +8,8 @@
 
         public DateTime Date { get; set; }
         public Uye Publisher { get; set; }
-        public byte[]? FileData { get; set; }
-        public string FileName { get; set; }
-        //public File File { get; set; }
+        public byte[] ContentFile { set; get; }
+
         public List<Yorum> Yorumlar { get; set; }
         public Konferans PaylasilanKonferans { get; set; }
     }

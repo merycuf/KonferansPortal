@@ -3,13 +3,13 @@
 <form asp-action="Login" method="post">
     <div>
         <label asp-for="Email">Mail Adresi</label>
-        <input asp-for="Email" />
-        <span asp-validation-for="Email"></span>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
     </div>
     <div>
         <label asp-for="Password">Şifre</label>
-        <input asp-for="Password" type="password" />
-        <span asp-validation-for="Password"></span>
+        <input asp-for="Password" type="password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
     </div>
     <div class="checkbox">
         <label>
@@ -17,5 +17,9 @@
         </label>
     </div>
 
-    <button type="submit">Login</button>
+    @if (Model.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+    <button type="submit" class="btn btn-primary">Giriş Yap</button>
 </form>

@@ -4,17 +4,17 @@ namespace KonferansPortal.Models
 {
     public class Egitmen : Uye
     {
-        public Egitmen(Uye egitmen)
+        public Egitmen fillEgitmen(Uye uye)
         {
-            Name = egitmen.Name;
-            Surname = egitmen.Surname;
-            Id = egitmen.Id;
-            Email = egitmen.Email ;
+            Egitmen egitmen = new Egitmen();
+            egitmen.Name = uye.Name ;
+            egitmen.Surname = uye.Surname ;
+            egitmen.Id = uye.Id ;
+            egitmen.Email = uye.Email;
             //Username = egitmen.UserName;
-            Discriminator = "Egitmen" ;
-
+            egitmen.Discriminator = "Egitmen";
+            return egitmen;
         }
-
         public List<Konferans> EgitilenKonferans { get; set; }
 
     }

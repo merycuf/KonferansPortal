@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KonferansPortal.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241230235612_olsun")]
-    partial class olsun
+    [Migration("20250130153939_postCleanse")]
+    partial class postCleanse
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,15 +27,15 @@ namespace KonferansPortal.Migrations
 
             modelBuilder.Entity("EgitmenKonferans", b =>
                 {
-                    b.Property<int>("EgitilenKonferansId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("EgitmenlerId")
+                    b.Property<string>("EgitmenId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("EgitilenKonferansId", "EgitmenlerId");
+                    b.Property<int>("KonferansId")
+                        .HasColumnType("int");
 
-                    b.HasIndex("EgitmenlerId");
+                    b.HasKey("EgitmenId", "KonferansId");
+
+                    b.HasIndex("KonferansId");
 
                     b.ToTable("EgitmenKonferans");
                 });
@@ -56,7 +56,6 @@ namespace KonferansPortal.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ImageUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
@@ -84,8 +83,10 @@ namespace KonferansPortal.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ImageUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("KonferansImage")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -100,6 +101,63 @@ namespace KonferansPortal.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Konferanslar");
+                });
+
+            modelBuilder.Entity("KonferansPortal.Models.Paylasim", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("ContentFile")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PublisherId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublisherId");
+
+                    b.ToTable("Paylasim");
+                });
+
+            modelBuilder.Entity("KonferansPortal.Models.Tartisma", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PublisherId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublisherId");
+
+                    b.ToTable("Tartisma");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.Uye", b =>
@@ -126,9 +184,6 @@ namespace KonferansPortal.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<int?>("KonferansId")
-                        .HasColumnType("int");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -176,8 +231,6 @@ namespace KonferansPortal.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("KonferansId");
-
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -191,6 +244,62 @@ namespace KonferansPortal.Migrations
                     b.HasDiscriminator().HasValue("Uye");
 
                     b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("KonferansPortal.Models.Yorum", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CevaplananId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("PaylasimId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PublisherId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("TartismaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CevaplananId");
+
+                    b.HasIndex("PaylasimId");
+
+                    b.HasIndex("PublisherId");
+
+                    b.HasIndex("TartismaId");
+
+                    b.ToTable("Yorum");
+                });
+
+            modelBuilder.Entity("KonferansUye", b =>
+                {
+                    b.Property<int>("KonferansId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UyeId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("KonferansId", "UyeId");
+
+                    b.HasIndex("UyeId");
+
+                    b.ToTable("KonferansUye");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -335,24 +444,91 @@ namespace KonferansPortal.Migrations
 
             modelBuilder.Entity("EgitmenKonferans", b =>
                 {
-                    b.HasOne("KonferansPortal.Models.Konferans", null)
+                    b.HasOne("KonferansPortal.Models.Egitmen", null)
                         .WithMany()
-                        .HasForeignKey("EgitilenKonferansId")
+                        .HasForeignKey("EgitmenId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("KonferansPortal.Models.Egitmen", null)
+                    b.HasOne("KonferansPortal.Models.Konferans", null)
                         .WithMany()
-                        .HasForeignKey("EgitmenlerId")
+                        .HasForeignKey("KonferansId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("KonferansPortal.Models.Uye", b =>
+            modelBuilder.Entity("KonferansPortal.Models.Paylasim", b =>
+                {
+                    b.HasOne("KonferansPortal.Models.Konferans", "PaylasilanKonferans")
+                        .WithMany("Paylasimlar")
+                        .HasForeignKey("Id");
+
+                    b.HasOne("KonferansPortal.Models.Uye", "Publisher")
+                        .WithMany()
+                        .HasForeignKey("PublisherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PaylasilanKonferans");
+
+                    b.Navigation("Publisher");
+                });
+
+            modelBuilder.Entity("KonferansPortal.Models.Tartisma", b =>
+                {
+                    b.HasOne("KonferansPortal.Models.Konferans", "Konferans")
+                        .WithMany("Tartismalar")
+                        .HasForeignKey("Id");
+
+                    b.HasOne("KonferansPortal.Models.Uye", "Publisher")
+                        .WithMany()
+                        .HasForeignKey("PublisherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Konferans");
+
+                    b.Navigation("Publisher");
+                });
+
+            modelBuilder.Entity("KonferansPortal.Models.Yorum", b =>
+                {
+                    b.HasOne("KonferansPortal.Models.Yorum", "Cevaplanan")
+                        .WithMany()
+                        .HasForeignKey("CevaplananId");
+
+                    b.HasOne("KonferansPortal.Models.Paylasim", null)
+                        .WithMany("Yorumlar")
+                        .HasForeignKey("PaylasimId");
+
+                    b.HasOne("KonferansPortal.Models.Uye", "Publisher")
+                        .WithMany()
+                        .HasForeignKey("PublisherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KonferansPortal.Models.Tartisma", null)
+                        .WithMany("Yorumlar")
+                        .HasForeignKey("TartismaId");
+
+                    b.Navigation("Cevaplanan");
+
+                    b.Navigation("Publisher");
+                });
+
+            modelBuilder.Entity("KonferansUye", b =>
                 {
                     b.HasOne("KonferansPortal.Models.Konferans", null)
-                        .WithMany("Katilimcilar")
-                        .HasForeignKey("KonferansId");
+                        .WithMany()
+                        .HasForeignKey("KonferansId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KonferansPortal.Models.Uye", null)
+                        .WithMany()
+                        .HasForeignKey("UyeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -408,7 +584,19 @@ namespace KonferansPortal.Migrations
 
             modelBuilder.Entity("KonferansPortal.Models.Konferans", b =>
                 {
-                    b.Navigation("Katilimcilar");
+                    b.Navigation("Paylasimlar");
+
+                    b.Navigation("Tartismalar");
+                });
+
+            modelBuilder.Entity("KonferansPortal.Models.Paylasim", b =>
+                {
+                    b.Navigation("Yorumlar");
+                });
+
+            modelBuilder.Entity("KonferansPortal.Models.Tartisma", b =>
+                {
+                    b.Navigation("Yorumlar");
                 });
 #pragma warning restore 612, 618
         }

@@ -2,6 +2,7 @@
 using KonferansPortal.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Dynamic;
 
 namespace KonferansPortal.Controllers
@@ -30,14 +31,36 @@ namespace KonferansPortal.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpGet]
-        public Task<IActionResult> EgitmenAta(Konferans konferans, Uye egitmen)
+        [HttpPost]
+        public async Task<IActionResult> EgitmenAta(int konferansId, string egitmenEmail)
         {
-            Egitmen newEgitmen = new Egitmen(egitmen);
-            
-            konferans.Egitmenler.Add(newEgitmen);
+            var konferansContext = await _context.Konferanslar
+            .Include(k => k.Egitmenler)
+            .FirstOrDefaultAsync(k => k.Id == konferansId);
 
-            return null;// RedirectToAction("Index", "Admin");
+            var contextUye = await _context.Uyeler
+            .FirstOrDefaultAsync(e => e.Email == egitmenEmail);
+
+            Egitmen newEgitmen = new Egitmen();
+            newEgitmen = newEgitmen.fillEgitmen(contextUye);
+
+            if(konferansContext.Egitmenler == null)
+            {
+                konferansContext.Egitmenler = new List<Egitmen>();
+            }
+            konferansContext.Egitmenler.Add(newEgitmen);
+
+            if(newEgitmen.EgitilenKonferans==null)
+                newEgitmen.EgitilenKonferans = new List<Konferans>();
+
+            newEgitmen.EgitilenKonferans.Add(konferansContext);
+
+            _context.Egitmenler.Add(newEgitmen);
+            _context.Konferanslar.Update(konferansContext);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Admin");
         }
     }
 }

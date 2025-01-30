@@ -1,11 +1,13 @@
-﻿using KonferansPortal.Models;
+﻿using KonferansPortal.Data;
+using KonferansPortal.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace KonferansPortal
 {
     public static class SeedData
     {
-        public static async Task Initialize(UserManager<Uye> userManager, RoleManager<IdentityRole> roleManager)
+        public static async Task Initialize(UserManager<Uye> userManager, RoleManager<IdentityRole> roleManager, AppDbContext context)
         {
             string adminRole = "Admin";
             string userRole = "User";
@@ -67,6 +69,25 @@ namespace KonferansPortal
                     }
                 }
             }
+
+            if (!context.Duyurular.Any())
+            {
+                
+                List<Duyurular> duyuruSeed = new List<Duyurular>();
+                for (int i = 1; i < 30 ; i++)
+                {
+                    context.Duyurular.Add(
+                        new Duyurular
+                        {
+                            Title = "Announcement " + i,
+                            Content = "This is the content of the announcement " + i,
+                            Date = DateTime.Now
+                        });
+                }
+
+                context.SaveChanges();
+            }
+
         }
     }
 }

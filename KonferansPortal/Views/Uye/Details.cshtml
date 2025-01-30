@@ -4,13 +4,14 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>@Html.DisplayNameFor(model => model.Name)</h1>
-<h1>@Html.DisplayNameFor(model => model.Surname)</h1>
-<h4>@Html.DisplayNameFor(model => model.Email)</h4>
+<div>
+    <h1>@Model.Name @Model.Surname</h1>
+    <h4>@Model.Email</h4>
+</div>
+
 
 <div>
-    <a asp-action="katilinanKonferanslar">Konferanslarım</a>
+    <a asp-action="Konferanslarim" style="margin-right: 15px;">Konferanslarım</a>
     <a asp-action="UpdateProfile">Bilgileri Guncelle</a>
-
 </div>
 

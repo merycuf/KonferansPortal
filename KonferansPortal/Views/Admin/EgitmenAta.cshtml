@@ -6,28 +6,44 @@
 
 <h1>Eğitmen Ata</h1>
 
-<form method="post">
+<form asp-action ="EgitmenAta" method="post">
     <div>
         <h5>Eğitmen Atanacak Konferans</h5>
-        <select id="konferansCmbBox" >
-        @foreach (var Konferans in Model.Konferanslar)
+        <select id="konferansCmbBox" name="konferansId">
+            @foreach (var konferans in Model.Konferanslar)
         {
-                <option value="@Konferans.Name"> @Konferans.Name </option>
+                <option value="@konferans.Id"> @konferans.Name </option>
         }
     </select>
     </div>
 
     <div>
         <h5>Atanacak Eğitmen</h5>
+        <input type="hidden" id="egitmenEmail" name="egitmenEmail" />
+        <input list="egitmenCmbBox" id="egitmenInput" autocomplete="off" oninput="updateEgitmenEmail(this)" />
         <datalist id="egitmenCmbBox">
-            @foreach (var Egitmen in Model.Egitmenler)
+            @foreach (var egitmen in Model.Egitmenler)
             {
-                <option value="@Egitmen.Name"></option>
+                <option value="@egitmen.Email">@egitmen.Name (@egitmen.Email)</option>
             }
         </datalist>
-        <input autoComplete="off" list="egitmenCmbBox" />
     </div>
     <button type="submit">Ata</button>
 </form>
 
 
+<script>
+    function updateEgitmenEmail(input) {
+        // Find the selected option in the datalist
+        const datalist = document.getElementById('egitmenCmbBox');
+        const selectedOption = Array.from(datalist.options).find(option => option.value === input.value);
+
+        // If a matching option is found, set the hidden input value to the selected option's value
+        if (selectedOption) {
+            document.getElementById('egitmenEmail').value = selectedOption.value;
+        } else {
+            // If no matching option is found, clear the hidden input value
+            document.getElementById('egitmenEmail').value = '';
+        }
+    }
+</script>

@@ -15,9 +15,9 @@
 </div>
 
 <div>
-    @if(User.Identity.IsAuthenticated && User.HasClaim(c => c.Type == "IsEgitmen" && c.Value == "true"))
+    @if (User.Identity.IsAuthenticated && User.HasClaim(c => c.Type == "IsEgitmen" && c.Value == "true"))
     {
-        <button class="btn btn-primary" onclick="PaylasimEkle()">Paylaşım Ekle</button>
+        <a asp-action="PaylasimEkle" asp-route-id="@Model.Id">Paylaşım Ekle</a>
     }
     <table class="table">
         <tbody>
@@ -32,7 +32,7 @@
                                 <h5>@item.Content</h5>
                                 <h6>@item.Publisher</h6>
                                 <h6>@item.Date</h6>
-                                <h6 onClick="dosyaIndir()">@item.FileName</h6>
+                                <h6 onClick="dosyaIndir()">Dosya</h6>
                             </div>
                         </td>
                     </tr>

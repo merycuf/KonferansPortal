@@ -14,7 +14,15 @@
     </div>
     <div>
         <label>Dosya</label>
-        <input type="file" name="File" class="form-control-file" />
+        <input id = "fileSelector" type="file" name="ContentFile" class="form-control-file" onloadeddata="importToHidden()" />
+        <input id="hiddenInput" type="hidden" asp-for="ContentFile" />
     </div>
     <button type="submit">Paylaşım Ekle</button>
 </form>
+
+<script>
+    function importToHidden() {
+
+        document.getElementById(fileSelector).value = document.getElementById(hiddenInput).value;
+    }
+</script>

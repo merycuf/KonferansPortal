@@ -31,21 +31,21 @@ namespace KonferansPortal.Controllers
         [Authorize(Roles = "Admin")]
         public ActionResult Create()
         {
-            return View();
+            return View(new Duyurular());
         }
 
         // POST: DuyurularController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Content,Date,ImageUrl")] Duyurular duyuru)
+        public async Task<IActionResult> Create(Duyurular duyuru)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(duyuru);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(duyuru);
+
+            duyuru.Date = DateTime.Now;          
+
+            _context.Add(duyuru);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index","Home");
+            
         }
 
         // GET: DuyurularController/Edit/5

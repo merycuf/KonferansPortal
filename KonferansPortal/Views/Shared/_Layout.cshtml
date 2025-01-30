@@ -30,9 +30,7 @@
                         </li>
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <form method="post" asp-controller="Uye" asp-action="Logout" id="logoutForm" class="form-inline">
-                                <button type="submit" class="btn btn-link text-dark nav-link">Logout</button>
-                            </form>
+                            
                             @if (User.IsInRole("Admin"))
                             {
                                 <li>
@@ -42,9 +40,12 @@
                             else
                             {
                                 <li>
-                                <a class="nav-link text-dark" asp-controller="Uye" asp-action="Details" id="uyeDetails" class="form-inline">Profil</a>
+                                <a class="nav-link text-dark" asp-controller="Uye" asp-action="Details" class="form-inline">Profil</a>
                                 </li>
                             }
+                            <form method="post" asp-controller="Uye" asp-action="Logout" id="logoutForm" class="form-inline">
+                                <button type="submit" class="btn btn-link text-dark nav-link">Logout</button>
+                            </form>
                             
                         }
                         else

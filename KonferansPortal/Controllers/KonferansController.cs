@@ -5,6 +5,7 @@ using KonferansPortal.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using Microsoft.Extensions.Hosting;
 
 namespace KonferansPortal.Controllers
 {
@@ -22,8 +23,7 @@ namespace KonferansPortal.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "IsKatilimci")]
-        [Authorize(Policy = "IsEgitmen")]
+        [Authorize(Policy = "IsEgitmenOrKatilimci")]
         public async Task<IActionResult> KonferansMainView(int id)
         {
             /*var authorizationResult = await _authorizationService.AuthorizeAsync(User, null, new IsKatilimciRequirement());//patlıyo
@@ -36,7 +36,7 @@ namespace KonferansPortal.Controllers
             }*/
 
             var konferans = await _context.Konferanslar.FirstOrDefaultAsync(k => k.Id == id);
-         
+
             if (konferans == null)
             {
                 return NotFound();
@@ -56,20 +56,25 @@ namespace KonferansPortal.Controllers
         {
             var konferans = await _context.Konferanslar.Include(k => k.Katilimcilar)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-            if(currentUser != null)
+            var currentUser = await _context.Uyeler.Include(u => u.katilinanKonferanslar).FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+            if (currentUser != null)
             {
                 if (konferans.Katilimcilar == null)
                 {
                     konferans.Katilimcilar = new List<Uye>();
                 }
 
-                else if (konferans.Katilimcilar.Any(k => k.Id == currentUser.Id))
+                else if (konferans.Katilimcilar.Any(k => k.Email == currentUser.Name))
                 {
                     return RedirectToAction("KonferansMainView", "Konferans");
                 }
 
                 konferans.Katilimcilar.Add(currentUser);
+                if (currentUser.katilinanKonferanslar == null)
+                {
+                    currentUser.katilinanKonferanslar = new List<Konferans>();
+                }
+                currentUser.katilinanKonferanslar.Add(konferans);
                 await _context.SaveChangesAsync();
                 return View();
             }
@@ -84,7 +89,7 @@ namespace KonferansPortal.Controllers
                 return NotFound();
             }
 
-            var konferans = await _context.Konferanslar.Include(k => k.Katilimcilar)
+            var konferans = await _context.Konferanslar.Include(k => k.Katilimcilar).Include(k => k.Egitmenler)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (konferans == null)
             {
@@ -95,68 +100,47 @@ namespace KonferansPortal.Controllers
             if (currentUser != null)
             {
                 var claims = await _userManager.GetClaimsAsync(currentUser);
+                var isEgitmenOrKatilimciClaim = claims.FirstOrDefault(c => c.Type == "IsEgitmenOrKatilimci");
                 var isKatilimciClaim = claims.FirstOrDefault(c => c.Type == "IsKatilimci");
+                var isEgitmenClaim = claims.FirstOrDefault(c => c.Type == "IsEgitmen");
+
+                bool[] boolArray = [false, false];
+                if (isEgitmenOrKatilimciClaim != null)
+                {
+                    await _userManager.RemoveClaimAsync(currentUser, isEgitmenOrKatilimciClaim);
+                }
                 if (isKatilimciClaim != null)
                 {
                     await _userManager.RemoveClaimAsync(currentUser, isKatilimciClaim);
                 }
-                if (konferans.Katilimcilar == null)
+                if (isEgitmenClaim != null)
                 {
-                    konferans.Katilimcilar = new List<Uye>();
+                    await _userManager.RemoveClaimAsync(currentUser, isEgitmenClaim);
                 }
-                if (konferans.Katilimcilar.Any(k => k.Id == currentUser.Id))
-                {
-                    await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "true"));
-                }
+
+                if (konferans.Egitmenler!= null && konferans.Egitmenler.FirstOrDefault(e=>e.Name == currentUser.Name) != null)
+                    boolArray[0] = true;
                 else
+                    boolArray[0] = false;
+
+                if (konferans.Katilimcilar!= null && konferans.Katilimcilar.Contains(currentUser))
+                    boolArray[1] = true;
+                else
+                    boolArray[1] = false;
+
+                await _userManager.AddClaimsAsync(currentUser, new List<Claim>
                 {
-                    await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "false"));
-                }
+                    new Claim("IsEgitmenOrKatilimci", (boolArray[0] || boolArray[1]).ToString()),
+                    new Claim("IsEgitmen", boolArray[0].ToString()),
+                    new Claim("IsKatilimci", boolArray[1].ToString())
+                });
+
+
             }
             return View(konferans);
         }
 
-        // POST: Konferans/Details/5
-        [HttpPost]
-        public async Task<IActionResult> Details(Uye model, int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var konferans = await _context.Konferanslar
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (konferans == null)
-            {
-                return NotFound();
-            }
-            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-            if (currentUser != null)
-            {
-                if (konferans.Egitmenler.Contains(currentUser))
-                {
-                    var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsEgitmen", "true"));
-                    return RedirectToAction("KonferansMainView", "Konferans", konferans.Id);
-                }
-                else
-                {
-                    var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsEgitmen", "false"));
-                }
-
-                if (konferans.Katilimcilar.Contains(currentUser))
-                {
-                    var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "true"));
-                    return RedirectToAction("KonferansMainView", "Konferans", konferans.Id);
-                }
-                else
-                {
-                    var result = await _userManager.AddClaimAsync(currentUser, new Claim("IsKatilimci", "false"));
-                }
-            }
-            return View(konferans);
-        }
-
+        
         // GET: Konferans/Create
         [Authorize(Roles = "Admin")]
         [HttpGet]
@@ -168,8 +152,9 @@ namespace KonferansPortal.Controllers
         // POST: Konferans/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Id,Description,Price,StartDate,EndDate,ImageUrl")] Konferans konferans)
+        public async Task<IActionResult> Create(Konferans konferans,IFormFile file)
         {
+            konferans.KonferansImage = file != null ? GetByteArrayFromFile(file) : null;
             if (ModelState.IsValid)
             {
                 _context.Add(konferans);
@@ -268,14 +253,21 @@ namespace KonferansPortal.Controllers
             return _context.Konferanslar.Any(e => e.Id == id);
         }
 
+        [Authorize(Policy = "IsEgitmen")]
+        public IActionResult PaylasimEkle(int id)
+        {
+            return View();
+        }
+
         [HttpPost]
-        public async Task<IActionResult> PaylasimEkle(IFormFile File)
+        [Authorize(Policy = "IsEgitmen")]
+        /*public async Task<IActionResult> PaylasimEkle(IFormFile File)
         {
             if (File != null)
             {
                 var extent = Path.GetExtension(File.FileName);
                 var randomName = ($"{Guid.NewGuid()}{extent}");
-                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\img", randomName);
+                //var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\img", randomName);
 
                 using (var stream = new FileStream(path, FileMode.Create))
                 {
@@ -283,16 +275,60 @@ namespace KonferansPortal.Controllers
                 }
             }
             return View();
-        }
-        public void dosyaIndir() {
+        }*/
+        public void dosyaIndir()
+        {
 
         }
+        [HttpGet]
+        public IActionResult CreateTartisma(int konferansId)
+        {
+            var model = new TartismaViewModel
+            {
+                KonferansId = konferansId
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateTartisma(TartismaViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var currentUser = await _userManager.GetUserAsync(User);
+                var konferans = await _context.Konferanslar.FindAsync(model.KonferansId);
+
+                if (konferans == null)
+                {
+                    return NotFound();
+                }
+
+                var tartisma = new Tartisma
+                {
+                    Title = model.Title,
+                    Content = model.Content,
+                    Date = DateTime.Now,
+                    Publisher = currentUser,
+                    Konferans = konferans,
+                    Yorumlar = new List<Yorum>()
+                };
+
+                konferans.Tartismalar.Add(tartisma);
+                _context.Konferanslar.Update(konferans);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Tartismalar", new { konferansId = model.KonferansId });
+            }
+            return View(model);
+        }
+   
 
         [HttpGet]
+        [Authorize(Policy = "IsEgitmenOrKatilimci")]
         public async Task<IActionResult> Tartismalar(int id)
         {
-            Konferans? result = await _context.Konferanslar.FindAsync(id);
-            if(result == null)
+            Konferans? result = await _context.Konferanslar.FirstOrDefaultAsync(k=> k.Id == id);
+            if (result == null)
             {
                 return NotFound();
             }
@@ -300,8 +336,7 @@ namespace KonferansPortal.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "IsKatilimci")]
-        [Authorize(Policy = "IsEgitmen")]
+        [Authorize(Policy = "IsEgitmenOrKatilimci")]
         public async Task<IActionResult> KatilimcilarListView(int id)
         {
             var result = await _context.Konferanslar
@@ -314,7 +349,43 @@ namespace KonferansPortal.Controllers
             return View(result);
         }
 
-    }
-    
 
+        private byte[] GetByteArrayFromFile(IFormFile file)
+        {
+            using (var target = new MemoryStream())
+            {
+                file.CopyTo(target);
+                return target.ToArray();
+            }
+        }
+
+        [HttpPost]
+        [Authorize(Policy = "IsEgitmen")]
+        public async Task<IActionResult> PaylasimEkle(int id,string Title,string? Content,IFormFile file)
+        {
+           var paylasim = new Paylasim
+            {
+                Title = Title,
+                Content = Content,
+                ContentFile = file != null ? GetByteArrayFromFile(file) : null,
+                // Set other properties as needed
+                Date = DateTime.UtcNow,
+                Publisher = _context.Uyeler.FirstOrDefault(u => u.Name == User.Identity.Name)
+            };
+            var result = await _context.Konferanslar.Include(k=> k.Paylasimlar).FirstAsync(k=> k.Id == id);
+            if(result == null)
+            {
+                return NotFound();
+            }
+            if(result.Paylasimlar == null)
+            {
+                result.Paylasimlar = new List<Paylasim>();
+            }
+            result.Paylasimlar.Add(paylasim);
+            _context.Konferanslar.Update(result);
+            await  _context.SaveChangesAsync();
+            return RedirectToAction("KonferansMainView", id);
+        }
+
+    }
 }
