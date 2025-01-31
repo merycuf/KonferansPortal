@@ -4,6 +4,7 @@ using KonferansPortal.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KonferansPortal.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250131135900_contentFleCanBeNull")]
+    partial class contentFleCanBeNull
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,15 +27,15 @@ namespace KonferansPortal.Migrations
 
             modelBuilder.Entity("EgitmenKonferans", b =>
                 {
-                    b.Property<int>("EgitmenId")
-                        .HasColumnType("int");
-
                     b.Property<int>("KonferansId")
                         .HasColumnType("int");
 
-                    b.HasKey("EgitmenId", "KonferansId");
+                    b.Property<int>("UyeModelId")
+                        .HasColumnType("int");
 
-                    b.HasIndex("KonferansId");
+                    b.HasKey("KonferansId", "UyeModelId");
+
+                    b.HasIndex("UyeModelId");
 
                     b.ToTable("EgitmenKonferans");
                 });
@@ -450,15 +453,15 @@ namespace KonferansPortal.Migrations
 
             modelBuilder.Entity("EgitmenKonferans", b =>
                 {
-                    b.HasOne("KonferansPortal.Models.Egitmen", null)
-                        .WithMany()
-                        .HasForeignKey("EgitmenId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("KonferansPortal.Models.Konferans", null)
                         .WithMany()
                         .HasForeignKey("KonferansId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KonferansPortal.Models.Egitmen", null)
+                        .WithMany()
+                        .HasForeignKey("UyeModelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

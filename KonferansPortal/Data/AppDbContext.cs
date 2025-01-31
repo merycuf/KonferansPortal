@@ -14,6 +14,15 @@ namespace KonferansPortal.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Egitmen>()
+                .HasKey(e => e.EgitmenId);
+
+            // Configure the relationship between Egitmen and Uye
+            modelBuilder.Entity<Egitmen>()
+                .HasOne(e => e.UyeModel)
+                .WithMany() // No navigation property in Uye
+                .HasForeignKey(e => e.UyeId);
+
             // Configure the many-to-many relationship between Egitmen and Konferans
             modelBuilder.Entity<Egitmen>()
                 .HasMany(e => e.EgitilenKonferans)

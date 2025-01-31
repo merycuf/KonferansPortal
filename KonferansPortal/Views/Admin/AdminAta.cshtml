@@ -1,0 +1,39 @@
+﻿@model List<KonferansPortal.Models.Uye>
+@{
+    ViewData["Title"] = "AdminAta";
+}
+
+<h1>Admin Ata</h1>
+
+<form asp-action="AdminAta" method="post">
+
+    <div>
+        <h5>Atanacak Uye</h5>
+        <input type="hidden" id="uyeMail" name="uyeMail" />
+        <input list="uyeCmbBox" id="uyeInput" autocomplete="off" oninput="updateUyeMail(this)" />
+        <datalist id="uyeCmbBox">
+            @foreach (var uye in Model)
+            {
+                <option value="@uye.Email">@uye.Name (@uye.Email)</option>
+            }
+        </datalist>
+    </div>
+    <button type="submit">Ata</button>
+
+</form>
+
+
+<script>
+    function updateUyeMail(input) {
+
+        const datalist = document.getElementById("uyeCmbBox");
+        const selectedOption = Array.from(datalist.options).find(option => option.value === input.value);
+
+        if (selectedOption) {
+            document.getElementById('uyeMail').value = selectedOption.value;
+        } else {
+
+            document.getElementById('uyeMail').value = '';
+        }
+    }
+</script>

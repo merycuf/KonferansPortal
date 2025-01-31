@@ -14,7 +14,7 @@
     </div>
     <div>
         <label>Dosya</label>
-        <input id = "fileSelector" type="file" name="ContentFile" class="form-control-file" onloadeddata="importToHidden()" />
+        <input id="fileSelector" type="file" name="ContentFile" class="form-control-file" onchange="importToHidden()" />
         <input id="hiddenInput" type="hidden" asp-for="ContentFile" />
     </div>
     <button type="submit">Paylaşım Ekle</button>
@@ -22,7 +22,11 @@
 
 <script>
     function importToHidden() {
+        var fileSelector = document.getElementById("fileSelector");
+        var hiddenInput = document.getElementById("hiddenInput");
 
-        document.getElementById(fileSelector).value = document.getElementById(hiddenInput).value;
+        if (fileSelector.files.length > 0) {
+            //hiddenInput.value = fileSelector.files[0].name; //not implemented on model yet
+        }
     }
 </script>

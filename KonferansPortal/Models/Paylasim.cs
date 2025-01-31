@@ -8,7 +8,7 @@
 
         public DateTime Date { get; set; }
         public Uye Publisher { get; set; }
-        public byte[] ContentFile { set; get; }
+        public byte[]? ContentFile { set; get; }
 
         public List<Yorum> Yorumlar { get; set; }
         public Konferans PaylasilanKonferans { get; set; }

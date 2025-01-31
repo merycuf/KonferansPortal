@@ -44,9 +44,10 @@ namespace KonferansPortal
                 var konferans = await _context.Konferanslar
                     .Include(k => k.Katilimcilar)
                     .Include(k => k.Egitmenler)
+                    .ThenInclude(e => e.UyeModel)
                     .FirstOrDefaultAsync(k => k.Id == konferansId);
 
-                if (konferans != null && (konferans.Katilimcilar.Any(k => k.Id == user.Id) || konferans.Egitmenler.Any(k => k.Id==user.Id)) )
+                if (konferans != null && (konferans.Katilimcilar.Any(k => k.Id == user.Id) || konferans.Egitmenler.Any(k => k.UyeModel.Id==user.Id)) )
                 {
                     context.Succeed(requirement);
                 }

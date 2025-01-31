@@ -32,7 +32,8 @@ namespace KonferansPortal
                     Email = adminEmail,
                     EmailConfirmed = true,
                     Name = "Admin",
-                    Surname = "Admin"
+                    Surname = "Admin",
+                    Discriminator = "Admin"
 
                 };
 

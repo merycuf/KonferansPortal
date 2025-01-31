@@ -17,9 +17,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddIdentity<Uye, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
-/*builder.Services.AddIdentity<Egitmen, IdentityRole>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();*/
 
 builder.Services.AddScoped<IAuthorizationHandler, IsKatilimciHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, IsEgitmenHandler>();

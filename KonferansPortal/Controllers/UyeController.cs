@@ -50,7 +50,7 @@ namespace KonferansPortal.Controllers
 
             if (ModelState.IsValid)
             {
-                var uye = new Uye { UserName = model.Email, Email = model.Email,  Name = model.Name, Surname = model.Surname, Phone = model.Phone };
+                var uye = new Uye { UserName = model.Email, Email = model.Email,  Name = model.Name, Surname = model.Surname, Phone = model.Phone, Discriminator = "Uye"};
                 var result = await _userManager.CreateAsync(uye, model.Password);
 
                 if (result.Succeeded)

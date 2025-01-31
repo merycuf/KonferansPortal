@@ -23,7 +23,7 @@ namespace KonferansPortal.Controllers
             var totalPages = (int)Math.Ceiling(totalDuyurular / (double)pageSize);
 
             var duyurular = await _context.Duyurular
-                .OrderBy(d => d.Date)
+                .OrderByDescending(d => d.Date)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

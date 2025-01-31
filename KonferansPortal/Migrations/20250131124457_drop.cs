@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace KonferansPortal.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class drop : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -34,7 +34,7 @@ namespace KonferansPortal.Migrations
                     Surname = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Discriminator = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
+                    Discriminator = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -68,6 +68,18 @@ namespace KonferansPortal.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Duyurular", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Egitmenler",
+                columns: table => new
+                {
+                    EgitmenId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Egitmenler", x => x.EgitmenId);
                 });
 
             migrationBuilder.CreateTable(
@@ -199,17 +211,17 @@ namespace KonferansPortal.Migrations
                 name: "EgitmenKonferans",
                 columns: table => new
                 {
-                    EgitmenId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    KonferansId = table.Column<int>(type: "int", nullable: false)
+                    KonferansId = table.Column<int>(type: "int", nullable: false),
+                    UyeModelId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EgitmenKonferans", x => new { x.EgitmenId, x.KonferansId });
+                    table.PrimaryKey("PK_EgitmenKonferans", x => new { x.KonferansId, x.UyeModelId });
                     table.ForeignKey(
-                        name: "FK_EgitmenKonferans_AspNetUsers_EgitmenId",
-                        column: x => x.EgitmenId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
+                        name: "FK_EgitmenKonferans_Egitmenler_UyeModelId",
+                        column: x => x.UyeModelId,
+                        principalTable: "Egitmenler",
+                        principalColumn: "EgitmenId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_EgitmenKonferans_Konferanslar_KonferansId",
@@ -376,9 +388,9 @@ namespace KonferansPortal.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EgitmenKonferans_KonferansId",
+                name: "IX_EgitmenKonferans_UyeModelId",
                 table: "EgitmenKonferans",
-                column: "KonferansId");
+                column: "UyeModelId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_KonferansUye_UyeId",
@@ -448,6 +460,9 @@ namespace KonferansPortal.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Egitmenler");
 
             migrationBuilder.DropTable(
                 name: "Paylasim");

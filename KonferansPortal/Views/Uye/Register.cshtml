@@ -31,6 +31,7 @@
             <p style="font-size: small" id="uppercase-rule" class="text-danger">At least one uppercase letter</p>
             <p style="font-size: small" id="lowercase-rule" class="text-danger">At least one lowercase letter</p>
             <p style="font-size: small" id="number-rule" class="text-danger">At least one number</p>
+            <p style="font-size: small" id="symbol-rule" class="text-danger">At least one symbol</p>
         </div>
     </div>
     <div class="form-group">
@@ -52,6 +53,7 @@
                 var uppercaseRule = $('#uppercase-rule');
                 var lowercaseRule = $('#lowercase-rule');
                 var numberRule = $('#number-rule');
+                var symbolRule = $('#symbol-rule');
 
                 lengthRule.toggleClass('text-success', password.length >= 6);
                 lengthRule.toggleClass('text-danger', password.length < 6);
@@ -64,6 +66,9 @@
 
                 numberRule.toggleClass('text-success', /\d/.test(password));
                 numberRule.toggleClass('text-danger', !/\d/.test(password));
+
+                symbolRule.toggleClass('text-success', /[ -\/:-?\[-\`{-~]/.test(password));
+                symbolRule.toggleClass('text-danger', !/[ -\/:-?\[-\`{-~]/.test(password));
             });
         });
     </script>

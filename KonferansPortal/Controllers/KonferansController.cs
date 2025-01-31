@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using Microsoft.Extensions.Hosting;
 using System.Dynamic;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Security.Policy;
 
 namespace KonferansPortal.Controllers
 {
@@ -23,63 +25,32 @@ namespace KonferansPortal.Controllers
             _userManager = userManager;
         }
 
-        [HttpGet]
-        [Authorize(Policy = "IsEgitmenOrKatilimci")]
-        public async Task<IActionResult> KonferansMainView(int id)
-        {
-            /*var authorizationResult = await _authorizationService.AuthorizeAsync(User, null, new IsKatilimciRequirement());//patlıyo
-
-            if (!authorizationResult.Succeeded)
-            {
-                authorizationResult = await _authorizationService.AuthorizeAsync(User, null, new IsEgitmenRequirement());
-                if (!authorizationResult.Succeeded)
-                    return Forbid();
-            }*/
-
-            var konferans = await _context.Konferanslar.FirstOrDefaultAsync(k => k.Id == id);
-
-            if (konferans == null)
-            {
-                return NotFound();
-            }
-
-            return View(konferans);
-        }
-
         // GET: Konferans
         public async Task<IActionResult> Index()
         {
             return View(await _context.Konferanslar.ToListAsync());
         }
-
+        // GET: Konferans/Create
+        [Authorize(Roles = "Admin")]
         [HttpGet]
-        public async Task<IActionResult> KayitOl(int id)
+        public IActionResult Create()
         {
-            var konferans = await _context.Konferanslar.Include(k => k.Katilimcilar)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            var currentUser = await _context.Uyeler.Include(u => u.katilinanKonferanslar).FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-            if (currentUser != null)
+            return View();
+        }
+
+        // POST: Konferans/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Konferans konferans, IFormFile file)
+        {
+            konferans.KonferansImage = file != null ? GetByteArrayFromFile(file) : null;
+            if (ModelState.IsValid)
             {
-                if (konferans.Katilimcilar == null)
-                {
-                    konferans.Katilimcilar = new List<Uye>();
-                }
-
-                else if (konferans.Katilimcilar.Any(k => k.Email == currentUser.Name))
-                {
-                    return RedirectToAction("KonferansMainView", "Konferans");
-                }
-
-                konferans.Katilimcilar.Add(currentUser);
-                if (currentUser.katilinanKonferanslar == null)
-                {
-                    currentUser.katilinanKonferanslar = new List<Konferans>();
-                }
-                currentUser.katilinanKonferanslar.Add(konferans);
+                _context.Add(konferans);
                 await _context.SaveChangesAsync();
-                return View();
+                return RedirectToAction(nameof(Index));
             }
-            return RedirectToAction("Login", "Uye");
+            return View(konferans);
         }
 
         // GET: Konferans/Details/5
@@ -119,12 +90,12 @@ namespace KonferansPortal.Controllers
                     await _userManager.RemoveClaimAsync(currentUser, isEgitmenClaim);
                 }
 
-                if (konferans.Egitmenler!= null && konferans.Egitmenler.FirstOrDefault(e=>e.Name == currentUser.Name) != null)
+                if (konferans.Egitmenler != null && konferans.Egitmenler.FirstOrDefault(e => e.UyeModel == currentUser) != null)
                     boolArray[0] = true;
                 else
                     boolArray[0] = false;
 
-                if (konferans.Katilimcilar!= null && konferans.Katilimcilar.Contains(currentUser))
+                if (konferans.Katilimcilar != null && konferans.Katilimcilar.Contains(currentUser))
                     boolArray[1] = true;
                 else
                     boolArray[1] = false;
@@ -140,30 +111,200 @@ namespace KonferansPortal.Controllers
             }
             return View(konferans);
         }
+        [HttpGet]
+        public async Task<IActionResult> KayitOl(int id)
+        {
+            var konferans = await _context.Konferanslar.Include(k => k.Katilimcilar)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            var currentUser = await _context.Uyeler.Include(u => u.katilinanKonferanslar).FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+            if (currentUser != null)
+            {
+                if (konferans.Katilimcilar == null)
+                {
+                    konferans.Katilimcilar = new List<Uye>();
+                }
+
+                else if (konferans.Katilimcilar.Any(k => k.Email == currentUser.Name))
+                {
+                    return RedirectToAction("KonferansMainView", "Konferans");
+                }
+
+                konferans.Katilimcilar.Add(currentUser);
+                if (currentUser.katilinanKonferanslar == null)
+                {
+                    currentUser.katilinanKonferanslar = new List<Konferans>();
+                }
+                currentUser.katilinanKonferanslar.Add(konferans);
+                await _context.SaveChangesAsync();
+                return View();
+            }
+            return RedirectToAction("Login", "Uye");
+        }
+
+
+        [HttpGet]
+        [Authorize(Policy = "IsEgitmenOrKatilimci")]
+        public async Task<IActionResult> KonferansMainView(int id)
+        {
+            var konferans = await _context.Konferanslar.Include(k => k.Paylasimlar).FirstOrDefaultAsync(k => k.Id == id);
+
+            if (konferans == null)
+            {
+                return NotFound();
+            }
+
+            return View(konferans);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsEgitmenOrKatilimci")]
+        public async Task<IActionResult> KatilimcilarListView(int id)
+        {
+            var result = await _context.Konferanslar
+                .Include(k => k.Katilimcilar)
+                .Include(k => k.Egitmenler)
+                .ThenInclude(e => e.UyeModel)
+                .FirstOrDefaultAsync(k => k.Id == id);
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return View(result);
+        }
+
 
         
-        // GET: Konferans/Create
-        [Authorize(Roles = "Admin")]
-        [HttpGet]
-        public IActionResult Create()
+
+        [Authorize(Policy = "IsEgitmen")]
+        public IActionResult PaylasimEkle(int id)
         {
             return View();
         }
+        [Authorize(Policy = "IsEgitmen")]
+        [HttpPost]
+        public async Task<IActionResult> PaylasimEkle(int id, string Title, string? Content, IFormFile file)
+        {
+            var paylasim = new Paylasim
+            {
+                Title = Title,
+                Content = Content,
+                ContentFile = file != null ? GetByteArrayFromFile(file) : null,
+                Date = DateTime.UtcNow,
+                Publisher = _context.Uyeler.FirstOrDefault(u => u.Email == User.Identity.Name),
+                PaylasilanKonferans = await _context.Konferanslar.FirstAsync(k => k.Id == id)
+            };
+            var result = await _context.Konferanslar.Include(k => k.Paylasimlar).FirstAsync(k => k.Id == id);
+            if (result == null)
+            {
+                return NotFound();
+            }
+            if (result.Paylasimlar == null)
+            {
+                result.Paylasimlar = new List<Paylasim>();
+            }
+            result.Paylasimlar.Add(paylasim);
+            _context.Konferanslar.Update(result);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("KonferansMainView", id);
+        }
+        private byte[] GetByteArrayFromFile(IFormFile file)
+        {
+            using (var target = new MemoryStream())
+            {
+                file.CopyTo(target);
+                return target.ToArray();
+            }
+        }
 
-        // POST: Konferans/Create
+        /*public void dosyaIndir()
+        {
+
+        }*/
+        [HttpGet]
+        public IActionResult CreateTartisma(int id)
+        {
+            var model = new TartismaViewModel
+            {
+                KonferansId = id
+            };
+            return View(model);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Konferans konferans,IFormFile file)
+        public async Task<IActionResult> CreateTartisma(TartismaViewModel model)
         {
-            konferans.KonferansImage = file != null ? GetByteArrayFromFile(file) : null;
             if (ModelState.IsValid)
             {
-                _context.Add(konferans);
+                var currentUser = await _userManager.GetUserAsync(User);
+                var konferans = await _context.Konferanslar.Include(k => k.Tartismalar).FirstOrDefaultAsync(k => k.Id == model.KonferansId);
+                if (konferans == null)
+                {
+                    return NotFound();
+                }
+
+                var tartisma = new Tartisma
+                {
+                    Title = model.Title,
+                    Content = model.Content,
+                    Date = DateTime.Now,
+                    Publisher = currentUser,
+                    Konferans = konferans,
+                    Id = null
+                };
+
+                var result = _context.Add(tartisma);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                var konferanss = await _context.Konferanslar.Include(k => k.Tartismalar).FirstOrDefaultAsync(k => k.Id == model.KonferansId);
+                if (konferanss.Tartismalar == null)
+                {
+                    konferanss.Tartismalar = new List<Tartisma>();
+                }
+                konferanss.Tartismalar.Add(result.Entity);
+                _context.Konferanslar.Update(konferanss);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Tartismalar", new { konferansId = model.KonferansId });
             }
-            return View(konferans);
+            return View(model);
         }
+   
+
+        [HttpGet]
+        [Authorize(Policy = "IsEgitmenOrKatilimci")]
+        public async Task<IActionResult> Tartismalar(int id)
+        {
+            Konferans? result = await _context.Konferanslar.Include(k=>k.Tartismalar).FirstOrDefaultAsync(k=> k.Id == id);
+            if (result == null)
+            {
+                return NotFound();
+            }
+            dynamic mymodel = new ExpandoObject();
+            mymodel.KonferansId = id;
+            mymodel.Tartismalar = result.Tartismalar;
+            return View(mymodel);
+        }
+        [HttpGet]
+        public async Task<IActionResult> TartismaDetails(int konferansId, int id)
+        {
+            var konferans = await _context.Konferanslar.Include(k => k.Tartismalar).FirstOrDefaultAsync(k => k.Id == konferansId);
+            if(konferans == null || konferans.Tartismalar == null)
+            {
+                return NotFound();
+            }
+            Tartisma tartisma = konferans.Tartismalar.FirstOrDefault(t => t.Id == id);
+
+            if (tartisma == null)
+            {
+                return NotFound();
+            }
+            return View(tartisma);
+        }
+
+        
+
+        
+
+        //
 
         // GET: Konferans/Edit/5
         [Authorize(Roles = "Admin")]
@@ -254,171 +395,6 @@ namespace KonferansPortal.Controllers
             return _context.Konferanslar.Any(e => e.Id == id);
         }
 
-        [Authorize(Policy = "IsEgitmen")]
-        public IActionResult PaylasimEkle(int id)
-        {
-            return View();
-        }
-
-        [HttpPost]
-        [Authorize(Policy = "IsEgitmen")]
-        /*public async Task<IActionResult> PaylasimEkle(IFormFile File)
-        {
-            if (File != null)
-            {
-                var extent = Path.GetExtension(File.FileName);
-                var randomName = ($"{Guid.NewGuid()}{extent}");
-                //var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\img", randomName);
-
-                using (var stream = new FileStream(path, FileMode.Create))
-                {
-                    await File.CopyToAsync(stream);
-                }
-            }
-            return View();
-        }*/
-        public void dosyaIndir()
-        {
-
-        }
-        [HttpGet]
-        public IActionResult CreateTartisma(int id)
-        {
-            dynamic mymodel = new ExpandoObject();
-            mymodel.KonferansId = id;
-            var model = new TartismaViewModel
-            {
-                KonferansId = id
-            };
-            mymodel.model = model;
-            return View(model);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateTartisma(TartismaViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var currentUser = await _userManager.GetUserAsync(User);
-                var konferans = await _context.Konferanslar.Include(k=> k.Tartismalar).FirstOrDefaultAsync(k=> k.Id == model.KonferansId);
-
-                if (konferans == null)
-                {
-                    return NotFound();
-                }
-
-                
-                if(konferans.Tartismalar == null)
-                {
-                    konferans.Tartismalar = new List<Tartisma>();
-                }
-                var tartisma = new Tartisma
-                {
-                    Title = model.Title,
-                    Content = model.Content,
-                    Date = DateTime.Now,
-                    Publisher = currentUser,
-                    Konferans = konferans,
-                    Yorumlar = new List<Yorum>()
-                };
-
-                konferans.Tartismalar.Add(tartisma);
-                _context.Konferanslar.Update(konferans);
-                _context.SaveChanges();
-              //  await _context.SaveChangesAsync();
-                return RedirectToAction("Tartismalar", new { konferansId = model.KonferansId });
-            }
-            return View(model);
-        }
-   
-
-        [HttpGet]
-        [Authorize(Policy = "IsEgitmenOrKatilimci")]
-        public async Task<IActionResult> Tartismalar(int id)
-        {
-            Konferans? result = await _context.Konferanslar.Include(k=>k.Tartismalar).FirstOrDefaultAsync(k=> k.Id == id);
-            if (result == null)
-            {
-                return NotFound();
-            }
-            dynamic mymodel = new ExpandoObject();
-            mymodel.KonferansId = id;
-            mymodel.Tartismalar = result.Tartismalar;
-            return View(mymodel);
-        }
-        [HttpGet]
-        public async Task<IActionResult> TartismaDetails(int konferansId, int id)
-        {
-            // Fetch the Tartisma object by its ID
-            var konferans = await _context.Konferanslar.Include(k => k.Tartismalar).FirstOrDefaultAsync(k => k.Id == konferansId);
-            if(konferans == null || konferans.Tartismalar == null)
-            {
-                return NotFound();
-            }
-            Tartisma tartisma = konferans.Tartismalar.FirstOrDefault(t => t.Id == id);
-
-            // Check if Tartisma exists
-            if (tartisma == null)
-            {
-                return NotFound();
-            }
-
-            // Pass the Tartisma object to the view
-            return View(tartisma);
-        }
-
-        [HttpGet]
-        [Authorize(Policy = "IsEgitmenOrKatilimci")]
-        public async Task<IActionResult> KatilimcilarListView(int id)
-        {
-            var result = await _context.Konferanslar
-                .Include(k => k.Katilimcilar)
-                .Include(k => k.Egitmenler).FirstOrDefaultAsync(k => k.Id == id);
-            if (result == null)
-            {
-                return NotFound();
-            }
-            return View(result);
-        }
-
-
-        private byte[] GetByteArrayFromFile(IFormFile file)
-        {
-            using (var target = new MemoryStream())
-            {
-                file.CopyTo(target);
-                return target.ToArray();
-            }
-        }
-
-        [HttpPost]
-        [Authorize(Policy = "IsEgitmen")]
-        public async Task<IActionResult> PaylasimEkle(int id,string Title,string? Content,IFormFile file)
-        {
-           var paylasim = new Paylasim
-            {
-                Title = Title,
-                Content = Content,
-                ContentFile = file != null ? GetByteArrayFromFile(file) : null,
-                // Set other properties as needed
-                Date = DateTime.UtcNow,
-                Publisher = _context.Uyeler.FirstOrDefault(u => u.Name == User.Identity.Name)
-            };
-            var result = await _context.Konferanslar.Include(k=> k.Paylasimlar).FirstAsync(k=> k.Id == id);
-            if(result == null)
-            {
-                return NotFound();
-            }
-            if(result.Paylasimlar == null)
-            {
-                result.Paylasimlar = new List<Paylasim>();
-            }
-            result.Paylasimlar.Add(paylasim);
-            _context.Konferanslar.Update(result);
-            await  _context.SaveChangesAsync();
-            return RedirectToAction("KonferansMainView", id);
-        }
 
     }
 }

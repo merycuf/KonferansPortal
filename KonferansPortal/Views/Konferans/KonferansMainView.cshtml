@@ -9,13 +9,12 @@
 <div>
     <ul>
         <li><a class="nav-link text-dark" asp-action="KatilimcilarListView" asp-route-id="@Model.Id">Katılımcılar</a></li>
-        <li><a class="nav-link text-dark" asp-action="Duyurular" asp-route-id="@Model.Id">Duyurular</a></li>
         <li><a class="nav-link text-dark" asp-action="Tartismalar" asp-route-id="@Model.Id">Tartışmalar</a></li>
     </ul>
 </div>
 
 <div>
-    @if (User.Identity.IsAuthenticated && User.HasClaim(c => c.Type == "IsEgitmen" && c.Value == "true"))
+    @if (User.Identity.IsAuthenticated && User.HasClaim(c => c.Type == "IsEgitmen" && c.Value == "True"))
     {
         <a asp-action="PaylasimEkle" asp-route-id="@Model.Id">Paylaşım Ekle</a>
     }
@@ -24,7 +23,7 @@
             @if (Model.Paylasimlar != null)
                 @foreach (var item in Model.Paylasimlar)
                 {
-                    <tr onclick="window.location.href='@Url.Action("Paylasim", "Konferans", new { id = item.Id })'" style="cursor: pointer;">
+                    <tr>
 
                         <td>
                             <div onClick ="dosyaIndir()">
@@ -32,7 +31,6 @@
                                 <h5>@item.Content</h5>
                                 <h6>@item.Publisher</h6>
                                 <h6>@item.Date</h6>
-                                <h6 onClick="dosyaIndir()">Dosya</h6>
                             </div>
                         </td>
                     </tr>

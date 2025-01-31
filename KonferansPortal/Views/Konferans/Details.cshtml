@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Details";
     var isUye = User.Identity.IsAuthenticated;
-    var isEgitmenOrKatilimci = User.HasClaim(c => c.Type == "IsEgitmenOrKatilimci" && c.Value == "True");
+    var isEgitmenOrKatilimci = User.HasClaim(c => c.Type == "IsEgitmenOrKatilimci" && (c.Value == "True" || c.Value == "true"));
 }
 
 <h1>Details</h1>

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KonferansPortal.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250131012137_Initial")]
-    partial class Initial
+    [Migration("20250131132454_uyeIdInEgitmen")]
+    partial class uyeIdInEgitmen
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,15 +27,15 @@ namespace KonferansPortal.Migrations
 
             modelBuilder.Entity("EgitmenKonferans", b =>
                 {
-                    b.Property<string>("EgitmenId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int>("KonferansId")
                         .HasColumnType("int");
 
-                    b.HasKey("EgitmenId", "KonferansId");
+                    b.Property<int>("UyeModelId")
+                        .HasColumnType("int");
 
-                    b.HasIndex("KonferansId");
+                    b.HasKey("KonferansId", "UyeModelId");
+
+                    b.HasIndex("UyeModelId");
 
                     b.ToTable("EgitmenKonferans");
                 });
@@ -65,6 +65,25 @@ namespace KonferansPortal.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Duyurular");
+                });
+
+            modelBuilder.Entity("KonferansPortal.Models.Egitmen", b =>
+                {
+                    b.Property<int>("EgitmenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EgitmenId"));
+
+                    b.Property<string>("UyeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("EgitmenId");
+
+                    b.HasIndex("UyeId");
+
+                    b.ToTable("Egitmenler");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.Konferans", b =>
@@ -177,8 +196,7 @@ namespace KonferansPortal.Migrations
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -243,10 +261,6 @@ namespace KonferansPortal.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasDiscriminator().HasValue("Uye");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.Yorum", b =>
@@ -438,26 +452,30 @@ namespace KonferansPortal.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("KonferansPortal.Models.Egitmen", b =>
-                {
-                    b.HasBaseType("KonferansPortal.Models.Uye");
-
-                    b.HasDiscriminator().HasValue("Egitmen");
-                });
-
             modelBuilder.Entity("EgitmenKonferans", b =>
                 {
-                    b.HasOne("KonferansPortal.Models.Egitmen", null)
-                        .WithMany()
-                        .HasForeignKey("EgitmenId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("KonferansPortal.Models.Konferans", null)
                         .WithMany()
                         .HasForeignKey("KonferansId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("KonferansPortal.Models.Egitmen", null)
+                        .WithMany()
+                        .HasForeignKey("UyeModelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("KonferansPortal.Models.Egitmen", b =>
+                {
+                    b.HasOne("KonferansPortal.Models.Uye", "UyeModel")
+                        .WithMany()
+                        .HasForeignKey("UyeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UyeModel");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.Paylasim", b =>
