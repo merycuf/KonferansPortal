@@ -1,46 +1,34 @@
-﻿@model IEnumerable<KonferansPortal.Models.Tartisma>
-
-@{
-    ViewData["Title"] = "Tartismalar";
-}
+﻿@model dynamic
 
 <h1>Tartismalar</h1>
 
 <p>
-    <a asp-action="CreateTartisma">Tartışma Oluştur</a>
+    <a asp-action="CreateTartisma" asp-route-id="@Model.KonferansId">Tartışma Oluştur</a>
 </p>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Title)
+                Title
             </th>
+
             <th>
-                @Html.DisplayNameFor(model => model.Content)
+                Date
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Date)
-            </th>
-            <th></th>
         </tr>
     </thead>
     <tbody>
-@if(Model != null)
-@foreach (var item in Model) {
+    @if(Model.Tartismalar != null || Model.Tartismalar.Count != 0)
+    @foreach (var item in Model.Tartismalar) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Title)
+                @item.Title
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Content)
+                @item.Date
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Date)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="TartismaDetails" asp-route-konferansId="@Model.KonferansId" asp-route-id="@item.Id">Details</a> |
             </td>
         </tr>
 }

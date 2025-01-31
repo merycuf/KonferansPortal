@@ -39,6 +39,15 @@ namespace KonferansPortal.Data
                 .HasForeignKey(e => e.Id)
                 .IsRequired(false);
 
+            modelBuilder.Entity<Tartisma>()
+                .HasOne(k => k.Konferans)
+                .WithMany(t => t.Tartismalar)
+                .HasForeignKey(e => e.Id)
+                .IsRequired(false);
+
+            modelBuilder.Entity<Tartisma>()
+                .Property(f => f.Id).UseIdentityColumn(seed: 1, increment:1);
+
             modelBuilder.Entity<Konferans>()
                 .HasMany(k => k.Paylasimlar)
                 .WithOne(p => p.PaylasilanKonferans)

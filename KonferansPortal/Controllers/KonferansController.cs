@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using Microsoft.Extensions.Hosting;
+using System.Dynamic;
 
 namespace KonferansPortal.Controllers
 {
@@ -281,12 +282,15 @@ namespace KonferansPortal.Controllers
 
         }
         [HttpGet]
-        public IActionResult CreateTartisma(int konferansId)
+        public IActionResult CreateTartisma(int id)
         {
+            dynamic mymodel = new ExpandoObject();
+            mymodel.KonferansId = id;
             var model = new TartismaViewModel
             {
-                KonferansId = konferansId
+                KonferansId = id
             };
+            mymodel.model = model;
             return View(model);
         }
 
@@ -297,13 +301,18 @@ namespace KonferansPortal.Controllers
             if (ModelState.IsValid)
             {
                 var currentUser = await _userManager.GetUserAsync(User);
-                var konferans = await _context.Konferanslar.FindAsync(model.KonferansId);
+                var konferans = await _context.Konferanslar.Include(k=> k.Tartismalar).FirstOrDefaultAsync(k=> k.Id == model.KonferansId);
 
                 if (konferans == null)
                 {
                     return NotFound();
                 }
 
+                
+                if(konferans.Tartismalar == null)
+                {
+                    konferans.Tartismalar = new List<Tartisma>();
+                }
                 var tartisma = new Tartisma
                 {
                     Title = model.Title,
@@ -316,7 +325,8 @@ namespace KonferansPortal.Controllers
 
                 konferans.Tartismalar.Add(tartisma);
                 _context.Konferanslar.Update(konferans);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
+              //  await _context.SaveChangesAsync();
                 return RedirectToAction("Tartismalar", new { konferansId = model.KonferansId });
             }
             return View(model);
@@ -327,12 +337,35 @@ namespace KonferansPortal.Controllers
         [Authorize(Policy = "IsEgitmenOrKatilimci")]
         public async Task<IActionResult> Tartismalar(int id)
         {
-            Konferans? result = await _context.Konferanslar.FirstOrDefaultAsync(k=> k.Id == id);
+            Konferans? result = await _context.Konferanslar.Include(k=>k.Tartismalar).FirstOrDefaultAsync(k=> k.Id == id);
             if (result == null)
             {
                 return NotFound();
             }
-            return View(result.Tartismalar);
+            dynamic mymodel = new ExpandoObject();
+            mymodel.KonferansId = id;
+            mymodel.Tartismalar = result.Tartismalar;
+            return View(mymodel);
+        }
+        [HttpGet]
+        public async Task<IActionResult> TartismaDetails(int konferansId, int id)
+        {
+            // Fetch the Tartisma object by its ID
+            var konferans = await _context.Konferanslar.Include(k => k.Tartismalar).FirstOrDefaultAsync(k => k.Id == konferansId);
+            if(konferans == null || konferans.Tartismalar == null)
+            {
+                return NotFound();
+            }
+            Tartisma tartisma = konferans.Tartismalar.FirstOrDefault(t => t.Id == id);
+
+            // Check if Tartisma exists
+            if (tartisma == null)
+            {
+                return NotFound();
+            }
+
+            // Pass the Tartisma object to the view
+            return View(tartisma);
         }
 
         [HttpGet]

@@ -21,6 +21,7 @@
                 <textarea asp-for="Content" class="form-control"></textarea>
                 <span asp-validation-for="Content" class="text-danger"></span>
             </div>
+            <input asp-for="KonferansId" type="hidden" class="form-control" value="@Model.KonferansId"/>
             <button type="submit" class="btn btn-primary">Create</button>
         </form>
     </div>

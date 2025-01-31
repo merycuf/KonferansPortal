@@ -32,8 +32,7 @@ namespace KonferansPortal
 
             if (!(context.Resource is HttpContext httpContext)) throw new InvalidOperationException("DefaultHttpContext expected");
             {
-                //var routeValues = authContext.RouteData.Values;
-                //if (routeValues.TryGetValue("konferansId", out var konferansIdValue) && int.TryParse(konferansIdValue.ToString(), out int konferansId))
+               
                 if (Int32.TryParse((String)httpContext.Request.RouteValues["id"], out int konferansId))
                 {
                     var user = await _userManager.GetUserAsync(context.User);

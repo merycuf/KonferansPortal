@@ -1,0 +1,83 @@
+﻿@model KonferansPortal.Models.Tartisma
+
+
+<h1>@Model.Title</h1>
+
+<div>
+    <h4>Details</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            Title
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Title
+        </dd>
+        <dt class="col-sm-2">
+            Content
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Content
+        </dd>
+        <dt class="col-sm-2">
+            Date
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Date.ToString("yyyy-MM-dd HH:mm:ss")
+        </dd>
+        <dt class="col-sm-2">
+            Publisher
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Publisher.UserName
+        </dd>
+    </dl>
+</div>
+
+<h4>Yorumlar</h4>
+<hr />
+@if (Model.Yorumlar != null && Model.Yorumlar.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Author
+                </th>
+                <th>
+                    Comment
+                </th>
+                <th>
+                    Date
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var yorum in Model.Yorumlar)
+            {
+                <tr>
+                    <td>
+                        @yorum.Publisher.Name @yorum.Publisher.Surname
+                    </td>
+                    <td>
+                        @yorum.Content
+                    </td>
+                    <td>
+                        @yorum.Date.ToString("yyyy-MM-dd HH:mm:ss")
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Yorum bulunamadı.</p>
+}
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

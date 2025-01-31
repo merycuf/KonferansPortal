@@ -2,7 +2,6 @@ using KonferansPortal.Data;
 using KonferansPortal.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PagedList;
 using System.Diagnostics;
 
 namespace KonferansPortal.Controllers
@@ -17,11 +16,6 @@ namespace KonferansPortal.Controllers
             _logger = logger;
             _context = context;
         }
-
-        /*public IActionResult Index()
-        {
-            return View();
-        }*/
 
         public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
         {

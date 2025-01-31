@@ -1,6 +1,7 @@
 ﻿using KonferansPortal.Data;
 using KonferansPortal.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Dynamic;
@@ -34,6 +35,7 @@ namespace KonferansPortal.Controllers
         [HttpPost]
         public async Task<IActionResult> EgitmenAta(int konferansId, string egitmenEmail)
         {
+
             var konferansContext = await _context.Konferanslar
             .Include(k => k.Egitmenler)
             .FirstOrDefaultAsync(k => k.Id == konferansId);
@@ -54,8 +56,8 @@ namespace KonferansPortal.Controllers
                 newEgitmen.EgitilenKonferans = new List<Konferans>();
 
             newEgitmen.EgitilenKonferans.Add(konferansContext);
-
             _context.Egitmenler.Add(newEgitmen);
+            _context.Uyeler.Remove(contextUye);
             _context.Konferanslar.Update(konferansContext);
 
             await _context.SaveChangesAsync();

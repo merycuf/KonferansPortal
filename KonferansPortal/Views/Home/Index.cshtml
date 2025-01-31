@@ -7,7 +7,7 @@
         @foreach (var duyuru in Model.Duyurular)
         {
             <tr>
-                <td>@duyuru.Title</td>
+                <td><a asp-controller= "Duyurular" asp-action="Details" asp-route-id="@duyuru.Id">@duyuru.Title</a></td>
             </tr>
         }
     </tbody>

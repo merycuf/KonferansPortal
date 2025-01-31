@@ -1,4 +1,9 @@
-﻿namespace KonferansPortal.Models
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace KonferansPortal.Models
 {
     public class Tartisma
     {

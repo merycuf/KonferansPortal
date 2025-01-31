@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KonferansPortal.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250130153939_postCleanse")]
-    partial class postCleanse
+    [Migration("20250131012137_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -136,7 +136,10 @@ namespace KonferansPortal.Migrations
             modelBuilder.Entity("KonferansPortal.Models.Tartisma", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .IsRequired()

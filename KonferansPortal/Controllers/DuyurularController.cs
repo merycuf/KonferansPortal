@@ -22,9 +22,14 @@ namespace KonferansPortal.Controllers
         }
 
         // GET: DuyurularController/Details/5
-        public ActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            return View(id);
+            var result = await _context.Duyurular.FirstOrDefaultAsync(d => d.Id == id);
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return View(result);
         }
 
         // GET: DuyurularController/Create
