@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace KonferansPortal.Migrations
 {
     /// <inheritdoc />
-    public partial class drop : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -68,18 +68,6 @@ namespace KonferansPortal.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Duyurular", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Egitmenler",
-                columns: table => new
-                {
-                    EgitmenId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Egitmenler", x => x.EgitmenId);
                 });
 
             migrationBuilder.CreateTable(
@@ -208,25 +196,20 @@ namespace KonferansPortal.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EgitmenKonferans",
+                name: "Egitmenler",
                 columns: table => new
                 {
-                    KonferansId = table.Column<int>(type: "int", nullable: false),
-                    UyeModelId = table.Column<int>(type: "int", nullable: false)
+                    EgitmenId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UyeId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EgitmenKonferans", x => new { x.KonferansId, x.UyeModelId });
+                    table.PrimaryKey("PK_Egitmenler", x => x.EgitmenId);
                     table.ForeignKey(
-                        name: "FK_EgitmenKonferans_Egitmenler_UyeModelId",
-                        column: x => x.UyeModelId,
-                        principalTable: "Egitmenler",
-                        principalColumn: "EgitmenId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_EgitmenKonferans_Konferanslar_KonferansId",
-                        column: x => x.KonferansId,
-                        principalTable: "Konferanslar",
+                        name: "FK_Egitmenler_AspNetUsers_UyeId",
+                        column: x => x.UyeId,
+                        principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -259,12 +242,15 @@ namespace KonferansPortal.Migrations
                 name: "Paylasim",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PublisherId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ContentFile = table.Column<byte[]>(type: "varbinary(max)", nullable: false)
+                    ContentFile = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    KonferansId = table.Column<int>(type: "int", nullable: true),
+                    PaylasimId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -276,8 +262,8 @@ namespace KonferansPortal.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Paylasim_Konferanslar_Id",
-                        column: x => x.Id,
+                        name: "FK_Paylasim_Konferanslar_KonferansId",
+                        column: x => x.KonferansId,
                         principalTable: "Konferanslar",
                         principalColumn: "Id");
                 });
@@ -291,7 +277,9 @@ namespace KonferansPortal.Migrations
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PublisherId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    PublisherId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    KonferansId = table.Column<int>(type: "int", nullable: true),
+                    TartismalarId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -303,10 +291,34 @@ namespace KonferansPortal.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Tartisma_Konferanslar_Id",
-                        column: x => x.Id,
+                        name: "FK_Tartisma_Konferanslar_KonferansId",
+                        column: x => x.KonferansId,
                         principalTable: "Konferanslar",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EgitmenKonferans",
+                columns: table => new
+                {
+                    EgitmenId = table.Column<int>(type: "int", nullable: false),
+                    KonferansId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EgitmenKonferans", x => new { x.EgitmenId, x.KonferansId });
+                    table.ForeignKey(
+                        name: "FK_EgitmenKonferans_Egitmenler_EgitmenId",
+                        column: x => x.EgitmenId,
+                        principalTable: "Egitmenler",
+                        principalColumn: "EgitmenId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EgitmenKonferans_Konferanslar_KonferansId",
+                        column: x => x.KonferansId,
+                        principalTable: "Konferanslar",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -388,9 +400,14 @@ namespace KonferansPortal.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EgitmenKonferans_UyeModelId",
+                name: "IX_EgitmenKonferans_KonferansId",
                 table: "EgitmenKonferans",
-                column: "UyeModelId");
+                column: "KonferansId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Egitmenler_UyeId",
+                table: "Egitmenler",
+                column: "UyeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_KonferansUye_UyeId",
@@ -398,9 +415,19 @@ namespace KonferansPortal.Migrations
                 column: "UyeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Paylasim_KonferansId",
+                table: "Paylasim",
+                column: "KonferansId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Paylasim_PublisherId",
                 table: "Paylasim",
                 column: "PublisherId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tartisma_KonferansId",
+                table: "Tartisma",
+                column: "KonferansId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tartisma_PublisherId",

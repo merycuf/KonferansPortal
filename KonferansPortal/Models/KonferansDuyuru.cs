@@ -11,7 +11,5 @@
         public Uye Publisher { get; set; }
         public byte[]? FileData { get; set; }
 
-
-
     }
 }

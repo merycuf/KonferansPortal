@@ -5,11 +5,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+                });
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("KonferansPortal")));
@@ -21,6 +27,8 @@ builder.Services.AddIdentity<Uye, IdentityRole>()
 builder.Services.AddScoped<IAuthorizationHandler, IsKatilimciHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, IsEgitmenHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, IsEgitmenOrKatilimciHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, IsOnKayitliHandler>();
+
 
 // Add Authentication and Authorization
 builder.Services.AddAuthentication();
@@ -32,6 +40,8 @@ builder.Services.AddAuthorization(options =>
         policy.Requirements.Add(new IsEgitmenRequirement()));
     options.AddPolicy("IsEgitmenOrKatilimci", policy =>
         policy.Requirements.Add(new IsEgitmenOrKatilimciRequirement()));
+    options.AddPolicy("IsOnKayitli", policy =>
+        policy.Requirements.Add(new IsOnKayitliRequirement()));
 });
 
 

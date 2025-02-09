@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KonferansPortal.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250131132454_uyeIdInEgitmen")]
-    partial class uyeIdInEgitmen
+    [Migration("20250207102524_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,15 +27,15 @@ namespace KonferansPortal.Migrations
 
             modelBuilder.Entity("EgitmenKonferans", b =>
                 {
+                    b.Property<int>("EgitmenId")
+                        .HasColumnType("int");
+
                     b.Property<int>("KonferansId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UyeModelId")
-                        .HasColumnType("int");
+                    b.HasKey("EgitmenId", "KonferansId");
 
-                    b.HasKey("KonferansId", "UyeModelId");
-
-                    b.HasIndex("UyeModelId");
+                    b.HasIndex("KonferansId");
 
                     b.ToTable("EgitmenKonferans");
                 });
@@ -125,17 +125,25 @@ namespace KonferansPortal.Migrations
             modelBuilder.Entity("KonferansPortal.Models.Paylasim", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("ContentFile")
-                        .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("KonferansId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PaylasimId")
+                        .HasColumnType("int");
 
                     b.Property<string>("PublisherId")
                         .IsRequired()
@@ -146,6 +154,8 @@ namespace KonferansPortal.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("KonferansId");
 
                     b.HasIndex("PublisherId");
 
@@ -167,15 +177,23 @@ namespace KonferansPortal.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("KonferansId")
+                        .HasColumnType("int");
+
                     b.Property<string>("PublisherId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("TartismalarId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("KonferansId");
 
                     b.HasIndex("PublisherId");
 
@@ -454,15 +472,15 @@ namespace KonferansPortal.Migrations
 
             modelBuilder.Entity("EgitmenKonferans", b =>
                 {
-                    b.HasOne("KonferansPortal.Models.Konferans", null)
+                    b.HasOne("KonferansPortal.Models.Egitmen", null)
                         .WithMany()
-                        .HasForeignKey("KonferansId")
+                        .HasForeignKey("EgitmenId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("KonferansPortal.Models.Egitmen", null)
+                    b.HasOne("KonferansPortal.Models.Konferans", null)
                         .WithMany()
-                        .HasForeignKey("UyeModelId")
+                        .HasForeignKey("KonferansId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -482,7 +500,7 @@ namespace KonferansPortal.Migrations
                 {
                     b.HasOne("KonferansPortal.Models.Konferans", "PaylasilanKonferans")
                         .WithMany("Paylasimlar")
-                        .HasForeignKey("Id");
+                        .HasForeignKey("KonferansId");
 
                     b.HasOne("KonferansPortal.Models.Uye", "Publisher")
                         .WithMany()
@@ -499,7 +517,7 @@ namespace KonferansPortal.Migrations
                 {
                     b.HasOne("KonferansPortal.Models.Konferans", "Konferans")
                         .WithMany("Tartismalar")
-                        .HasForeignKey("Id");
+                        .HasForeignKey("KonferansId");
 
                     b.HasOne("KonferansPortal.Models.Uye", "Publisher")
                         .WithMany()

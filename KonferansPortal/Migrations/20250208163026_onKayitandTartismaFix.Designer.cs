@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KonferansPortal.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250131201650_EgitmenIdfix")]
-    partial class EgitmenIdfix
+    [Migration("20250208163026_onKayitandTartismaFix")]
+    partial class onKayitandTartismaFix
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -94,6 +94,9 @@ namespace KonferansPortal.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -122,10 +125,46 @@ namespace KonferansPortal.Migrations
                     b.ToTable("Konferanslar");
                 });
 
+            modelBuilder.Entity("KonferansPortal.Models.OnKayit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<byte[]>("dekontFile")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<bool>("isChecked")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("isPaid")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("konferansId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("uyeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("konferansId");
+
+                    b.HasIndex("uyeId");
+
+                    b.ToTable("OnKayit");
+                });
+
             modelBuilder.Entity("KonferansPortal.Models.Paylasim", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
@@ -136,6 +175,12 @@ namespace KonferansPortal.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("KonferansId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PaylasimId")
+                        .HasColumnType("int");
+
                     b.Property<string>("PublisherId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -145,6 +190,8 @@ namespace KonferansPortal.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("KonferansId");
 
                     b.HasIndex("PublisherId");
 
@@ -166,15 +213,23 @@ namespace KonferansPortal.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("KonferansId")
+                        .HasColumnType("int");
+
                     b.Property<string>("PublisherId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("TartismalarId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("KonferansId");
 
                     b.HasIndex("PublisherId");
 
@@ -477,11 +532,30 @@ namespace KonferansPortal.Migrations
                     b.Navigation("UyeModel");
                 });
 
+            modelBuilder.Entity("KonferansPortal.Models.OnKayit", b =>
+                {
+                    b.HasOne("KonferansPortal.Models.Konferans", "konferans")
+                        .WithMany("OnKayitListe")
+                        .HasForeignKey("konferansId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KonferansPortal.Models.Uye", "uye")
+                        .WithMany()
+                        .HasForeignKey("uyeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("konferans");
+
+                    b.Navigation("uye");
+                });
+
             modelBuilder.Entity("KonferansPortal.Models.Paylasim", b =>
                 {
                     b.HasOne("KonferansPortal.Models.Konferans", "PaylasilanKonferans")
                         .WithMany("Paylasimlar")
-                        .HasForeignKey("Id");
+                        .HasForeignKey("KonferansId");
 
                     b.HasOne("KonferansPortal.Models.Uye", "Publisher")
                         .WithMany()
@@ -498,7 +572,7 @@ namespace KonferansPortal.Migrations
                 {
                     b.HasOne("KonferansPortal.Models.Konferans", "Konferans")
                         .WithMany("Tartismalar")
-                        .HasForeignKey("Id");
+                        .HasForeignKey("KonferansId");
 
                     b.HasOne("KonferansPortal.Models.Uye", "Publisher")
                         .WithMany()
@@ -604,6 +678,8 @@ namespace KonferansPortal.Migrations
 
             modelBuilder.Entity("KonferansPortal.Models.Konferans", b =>
                 {
+                    b.Navigation("OnKayitListe");
+
                     b.Navigation("Paylasimlar");
 
                     b.Navigation("Tartismalar");

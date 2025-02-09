@@ -45,14 +45,26 @@ namespace KonferansPortal.Data
             modelBuilder.Entity<Konferans>()
                 .HasMany(k => k.Tartismalar)
                 .WithOne(t => t.Konferans)
-                .HasForeignKey(e => e.Id)
+                .HasForeignKey("TartismalarId")
                 .IsRequired(false);
 
             modelBuilder.Entity<Tartisma>()
                 .HasOne(k => k.Konferans)
                 .WithMany(t => t.Tartismalar)
-                .HasForeignKey(e => e.Id)
+                .HasForeignKey("KonferansId")
                 .IsRequired(false);
+
+            modelBuilder.Entity<OnKayit>()
+                .HasOne(k => k.uye)
+                .WithMany(t => t.onKayitKonferanslar)
+                .HasForeignKey("UyeId")
+                .IsRequired(true);
+
+            modelBuilder.Entity<OnKayit>()
+                .HasOne(k => k.konferans)
+                .WithMany(t => t.OnKayitListe)
+                .HasForeignKey("KonferansId")
+                .IsRequired(true);
 
             modelBuilder.Entity<Tartisma>()
                 .Property(f => f.Id).UseIdentityColumn(seed: 1, increment:1);
@@ -60,7 +72,13 @@ namespace KonferansPortal.Data
             modelBuilder.Entity<Konferans>()
                 .HasMany(k => k.Paylasimlar)
                 .WithOne(p => p.PaylasilanKonferans)
-                .HasForeignKey(e => e.Id)
+                .HasForeignKey("PaylasimId")
+                .IsRequired(false);
+
+            modelBuilder.Entity<Paylasim>()
+                .HasOne(p => p.PaylasilanKonferans)
+                .WithMany(k => k.Paylasimlar)
+                .HasForeignKey("KonferansId")
                 .IsRequired(false);
         }
 

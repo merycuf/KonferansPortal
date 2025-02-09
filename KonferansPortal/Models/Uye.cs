@@ -13,5 +13,7 @@ namespace KonferansPortal.Models
         public string Discriminator { get; set; }
         public List<Konferans> katilinanKonferanslar { get; set; }
 
+        public List<OnKayit> onKayitKonferanslar { get; set; }
+
     }
 }

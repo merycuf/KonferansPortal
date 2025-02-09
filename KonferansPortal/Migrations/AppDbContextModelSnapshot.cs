@@ -91,6 +91,9 @@ namespace KonferansPortal.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -119,10 +122,46 @@ namespace KonferansPortal.Migrations
                     b.ToTable("Konferanslar");
                 });
 
+            modelBuilder.Entity("KonferansPortal.Models.OnKayit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KonferansId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UyeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<byte[]>("dekontFile")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<bool>("isChecked")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("isPaid")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KonferansId");
+
+                    b.HasIndex("UyeId");
+
+                    b.ToTable("OnKayit");
+                });
+
             modelBuilder.Entity("KonferansPortal.Models.Paylasim", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
@@ -133,6 +172,12 @@ namespace KonferansPortal.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("KonferansId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PaylasimId")
+                        .HasColumnType("int");
+
                     b.Property<string>("PublisherId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -142,6 +187,8 @@ namespace KonferansPortal.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("KonferansId");
 
                     b.HasIndex("PublisherId");
 
@@ -163,15 +210,23 @@ namespace KonferansPortal.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("KonferansId")
+                        .HasColumnType("int");
+
                     b.Property<string>("PublisherId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("TartismalarId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("KonferansId");
 
                     b.HasIndex("PublisherId");
 
@@ -474,11 +529,30 @@ namespace KonferansPortal.Migrations
                     b.Navigation("UyeModel");
                 });
 
+            modelBuilder.Entity("KonferansPortal.Models.OnKayit", b =>
+                {
+                    b.HasOne("KonferansPortal.Models.Konferans", "konferans")
+                        .WithMany("OnKayitListe")
+                        .HasForeignKey("KonferansId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KonferansPortal.Models.Uye", "uye")
+                        .WithMany("onKayitKonferanslar")
+                        .HasForeignKey("UyeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("konferans");
+
+                    b.Navigation("uye");
+                });
+
             modelBuilder.Entity("KonferansPortal.Models.Paylasim", b =>
                 {
                     b.HasOne("KonferansPortal.Models.Konferans", "PaylasilanKonferans")
                         .WithMany("Paylasimlar")
-                        .HasForeignKey("Id");
+                        .HasForeignKey("KonferansId");
 
                     b.HasOne("KonferansPortal.Models.Uye", "Publisher")
                         .WithMany()
@@ -495,7 +569,7 @@ namespace KonferansPortal.Migrations
                 {
                     b.HasOne("KonferansPortal.Models.Konferans", "Konferans")
                         .WithMany("Tartismalar")
-                        .HasForeignKey("Id");
+                        .HasForeignKey("KonferansId");
 
                     b.HasOne("KonferansPortal.Models.Uye", "Publisher")
                         .WithMany()
@@ -601,6 +675,8 @@ namespace KonferansPortal.Migrations
 
             modelBuilder.Entity("KonferansPortal.Models.Konferans", b =>
                 {
+                    b.Navigation("OnKayitListe");
+
                     b.Navigation("Paylasimlar");
 
                     b.Navigation("Tartismalar");
@@ -614,6 +690,11 @@ namespace KonferansPortal.Migrations
             modelBuilder.Entity("KonferansPortal.Models.Tartisma", b =>
                 {
                     b.Navigation("Yorumlar");
+                });
+
+            modelBuilder.Entity("KonferansPortal.Models.Uye", b =>
+                {
+                    b.Navigation("onKayitKonferanslar");
                 });
 #pragma warning restore 612, 618
         }

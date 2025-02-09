@@ -12,8 +12,10 @@
         public DateTime EndDate { set; get; }
         public string? ImageUrl { set; get; }
         public List<Paylasim>? Paylasimlar { set; get; }
-        public List<Tartisma>? Tartismalar { set; get; } 
+        public List<Tartisma>? Tartismalar { set; get; }
 
+        public List<OnKayit>? OnKayitListe { set; get; }
+        public int Capacity { get; set; } = int.MaxValue;
         public byte[]? KonferansImage { set; get;  }
     }
 }

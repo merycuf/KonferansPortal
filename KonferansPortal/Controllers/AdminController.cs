@@ -105,5 +105,11 @@ namespace KonferansPortal.Controllers
             return RedirectToAction("Index", "Admin");
         }
 
+        [Authorize(Roles = "Admin")]
+        public IActionResult OnKayitOnay()
+        {
+            return View(_context.Konferanslar.Include(k=> k.OnKayitListe).ThenInclude(o => o.uye).Include(k=>k.Katilimcilar).ToList());
+        }
+
     }
 }
