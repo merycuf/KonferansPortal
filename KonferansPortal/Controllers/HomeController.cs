@@ -42,6 +42,27 @@ namespace KonferansPortal.Controllers
         {
             return View();
         }
+        public IActionResult ContactUs() {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ContactUs(string Name, string Email, string Message, string Subject)
+        {
+            ContactMessage contactMessage = new ContactMessage
+            {
+                Email = Email,
+                Message = Message,
+                Name = Name,
+                Subject = Subject
+            };
+            
+            _context.ContactMessages.Add(contactMessage);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index");
+            
+            return View("Index");
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

@@ -111,5 +111,24 @@ namespace KonferansPortal.Controllers
             return View(_context.Konferanslar.Include(k=> k.OnKayitListe).ThenInclude(o => o.uye).Include(k=>k.Katilimcilar).ToList());
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> ContactMessages()
+        {
+            return View(await _context.ContactMessages.ToListAsync());
+        }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteMessage(int id)
+        {
+            var message = await _context.ContactMessages.FirstOrDefaultAsync(m => m.Id == id);
+            if (message == null)
+            {
+                return NotFound();
+            }
+            _context.ContactMessages.Remove(message);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("ContactMessages");
+        }
     }
 }

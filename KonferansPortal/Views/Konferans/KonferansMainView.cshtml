@@ -23,14 +23,18 @@
             @if (Model.Paylasimlar != null)
                 @foreach (var item in Model.Paylasimlar)
                 {
-                    <tr>
+                    <tr onclick="window.location.href='@Url.Action("PaylasimDetails", "Konferans", new { pId = item.Id , kId=Model.Id })'">
 
                         <td>
-                            <div onClick ="dosyaIndir()">
+                            <div>
                                 <h4>@item.Title</h4>
                                 <h5>@item.Content</h5>
                                 <h6>@item.Publisher</h6>
                                 <h6>@item.Date</h6>
+                                @if(item.ContentFile != null)
+                                {
+                                    <a href="/Konferans/DownloadPaylasimFile?paylasimid=@item.Id&konferansid=@Model.Id">Dosya</a>
+                                }
                             </div>
                         </td>
                     </tr>
@@ -38,3 +42,16 @@
         </tbody>
     </table>
 </div>
+
+<script>
+    async function openFileInNewTab(paylasimid, konferansid) {
+        const response = await fetch(`/Konferans/DownloadPaylasimFile?paylasimid=${paylasimid}&konferansid=${konferansid}`);
+        const url = await response.text();
+
+        if (url) {
+            window.open(url, '_blank');
+        } else {
+            alert('File not found');
+        }
+    }
+</script>

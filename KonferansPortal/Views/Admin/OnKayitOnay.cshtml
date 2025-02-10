@@ -41,8 +41,8 @@
                 const tableBody = document.getElementById('onayBekleyenlerTableBody');
                 tableBody.innerHTML = '';
 
-                if (data && data.length > 0) {
-                    data.forEach(item => {
+                if (data.$values && data.$values.length > 0) {
+                    data.$values.forEach(item => {
                         const row = document.createElement('tr');
 
                         const nameCell = document.createElement('td');
@@ -50,11 +50,11 @@
                         row.appendChild(nameCell);
 
                         const dekontCell = document.createElement('td');
-                        dekontCell.innerHTML = `<button onclick="dosyaindir()">Dekont</button>`;
+                        dekontCell.innerHTML = `<a href="/Konferans/DownloadDekont?konferansid=${selected}&uyeid=${item.Id}">Dekont</a>`;
                         row.appendChild(dekontCell);
 
                         const onayCell = document.createElement('td');
-                        onayCell.innerHTML = `<button onclick="onayla()">Onayla</button>`;
+                        onayCell.innerHTML = `<a href="/Konferans/OnKayitOnayla?konferansid=${selected}&kayitid=${item.Id}">Onayla</a>`;
                         row.appendChild(onayCell);
 
                         const redCell = document.createElement('td');
@@ -69,11 +69,11 @@
 
         async function dosyaindir(uyeId) {
             const selectedKonferansId = document.getElementById('konferansCmbBox').value;
-            window.location.href = `/Konferans/DownloadDekont?konferansId=${selectedKonferansId}&uyeId=${uyeId}`;
+            window.location.href = `/Konferans/DownloadDekont?konferansId=${selectedKonferansId}&uyeId={uyeId}`;
         }
 
-        async function onayla() {
-            const response = await fetch(`/Konferans/OnKayitOnayla?konferansId=${selected}`);
+        async function onayla(uyeId) {
+            const response = await fetch(`/Konferans/OnKayitOnayla?konferansId=${selected}&kayitId={uyeId}`);
             const data = await response.json();
             if (data) {
                 alert("Onaylama İşlemi Yapıldı");

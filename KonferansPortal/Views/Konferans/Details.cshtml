@@ -65,8 +65,10 @@
             else if (isUye && isOnKayit)
             {
                 <dd class="col-sm-10">
-                    <label>Dekont Yükle</label>
-                    <input id="fileSelector" type="file" name="file" class="form-control-file" />
+                    <form id="form" name="form" enctype="multipart/form-data" method="post" asp-action="DekontYukle" asp-route-konferansId="@Model.Id">
+                        <input id="file" type="file" name="file" class="form-control" />
+                        <button type="submit">Dekont Yükle</button>
+                    </form>
                     <button class="nav-link text-dark" onclick = "kayitSil()">Kayıt Sil</button>
                 </dd>
             }
@@ -83,43 +85,35 @@
     <a asp-action="Index">Back to List</a>
 </div>
 
-
-<script>
-    async function dosyaYukle() {
-        const response = await fetch(`/Uye/GetOnayBekleyenler?konferansId=${selected}`);
-        const data = await response.json();
-        const tableBody = document.getElementById('onayBekleyenlerTableBody');
-        tableBody.innerHTML = '';
-
-        if (data && data.length > 0) {
-            data.forEach(item => {
-                const row = document.createElement('tr');
-
-                const nameCell = document.createElement('td');
-                nameCell.innerHTML = `<h4>${item.Name} ${item.Surname}</h4>`;
-                row.appendChild(nameCell);
-
-                const dekontCell = document.createElement('td');
-                dekontCell.innerHTML = `<button onclick="dosyaindir()">Dekont</button>`;
-                row.appendChild(dekontCell);
-
-                const onayCell = document.createElement('td');
-                onayCell.innerHTML = `<button onclick="onayla()">Onayla</button>`;
-                row.appendChild(onayCell);
-
-                const redCell = document.createElement('td');
-                redCell.innerHTML = `<button onclick="reddet()">Reddet</button>`;
-                row.appendChild(redCell);
-
-                tableBody.appendChild(row);
-            });
+@section Scripts{
+    <script>
+        async function dosyaYukle() {
+            const form = document.getElementById('fileSelector');
+            if (form != null) {
+                //const formData = new FormData(form.files[0]);
+                const response = await fetch(`/Konferans/DekontYukle?konferansId=${@Model.Id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/octet-stream'
+                    },
+                    body: form.files[0].
+                });
+                const data = await response.json();
+                if (data != null)
+                    alert("Dekont Yüklenmiştir");
+                else
+                    alert("Hata! Dekont Yüklenemedi!");
+            }
+            else
+                alert("Dosya seçin")
+        
         }
-    }
 
-    async kayitSil() {
-        const response = await fetch(`/Uye/OnKayitSil?konferansId=${selected}`);
-        const data = await response.json();
-        if (!alert('Ön Kayıdınız Silinmiştir')) { window.location.reload(); }
-    }
+        async function kayitSil() {
+            const response = await fetch(`/Uye/OnKayitSil?konferansId=${selected}`);
+            const data = await response.json();
+            if (!alert('Ön Kayıdınız Silinmiştir')) { window.location.reload(); }
+        }
 
-</script>
+    </script>
+}

@@ -4,6 +4,7 @@ using KonferansPortal.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KonferansPortal.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250210040041_fileExtension")]
+    partial class fileExtension
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +37,7 @@ namespace KonferansPortal.Migrations
 
                     b.HasIndex("KonferansId");
 
-                    b.ToTable("EgitmenKonferans", (string)null);
+                    b.ToTable("EgitmenKonferans");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.ContactMessage", b =>
@@ -63,7 +66,7 @@ namespace KonferansPortal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ContactMessage", (string)null);
+                    b.ToTable("ContactMessage");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.Duyurular", b =>
@@ -90,7 +93,7 @@ namespace KonferansPortal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Duyurular", (string)null);
+                    b.ToTable("Duyurular");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.Egitmen", b =>
@@ -109,7 +112,7 @@ namespace KonferansPortal.Migrations
 
                     b.HasIndex("UyeId");
 
-                    b.ToTable("Egitmenler", (string)null);
+                    b.ToTable("Egitmenler");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.Konferans", b =>
@@ -148,7 +151,7 @@ namespace KonferansPortal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Konferanslar", (string)null);
+                    b.ToTable("Konferanslar");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.OnKayit", b =>
@@ -181,7 +184,7 @@ namespace KonferansPortal.Migrations
 
                     b.HasIndex("UyeId");
 
-                    b.ToTable("OnKayit", (string)null);
+                    b.ToTable("OnKayit");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.Paylasim", b =>
@@ -224,7 +227,7 @@ namespace KonferansPortal.Migrations
 
                     b.HasIndex("PublisherId");
 
-                    b.ToTable("Paylasim", (string)null);
+                    b.ToTable("Paylasim");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.Tartisma", b =>
@@ -261,7 +264,7 @@ namespace KonferansPortal.Migrations
 
                     b.HasIndex("PublisherId");
 
-                    b.ToTable("Tartisma", (string)null);
+                    b.ToTable("Tartisma");
                 });
 
             modelBuilder.Entity("KonferansPortal.Models.Uye", b =>
@@ -383,7 +386,7 @@ namespace KonferansPortal.Migrations
 
                     b.HasIndex("TartismaId");
 
-                    b.ToTable("Yorum", (string)null);
+                    b.ToTable("Yorum");
                 });
 
             modelBuilder.Entity("KonferansUye", b =>
@@ -398,7 +401,7 @@ namespace KonferansPortal.Migrations
 
                     b.HasIndex("UyeId");
 
-                    b.ToTable("KonferansUye", (string)null);
+                    b.ToTable("KonferansUye");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

@@ -80,13 +80,16 @@ namespace KonferansPortal.Data
                 .WithMany(k => k.Paylasimlar)
                 .HasForeignKey("KonferansId")
                 .IsRequired(false);
+
         }
 
         public DbSet<Konferans> Konferanslar { get; set; }
+        public DbSet<ContactMessage> ContactMessages { get; set; }
         public DbSet<Duyurular> Duyurular { get; set; }
         public DbSet<Uye> Uyeler { get; set; }
         public DbSet<Egitmen> Egitmenler { get; set; }
         public DbSet<Tartisma> Tartisma { get; set; }
         public DbSet<Paylasim> Paylasim { get; set; }
+        public DbSet<KonferansPortal.Models.ContactMessage> ContactMessage { get; set; } = default!;
     }
 }

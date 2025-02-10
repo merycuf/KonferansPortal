@@ -1,4 +1,4 @@
-﻿@model KonferansPortal.Models.Tartisma
+﻿@model KonferansPortal.Models.Paylasim
 
 
 <h1>@Model.Title</h1>
@@ -31,6 +31,15 @@
         <dd class="col-sm-10">
             @Model.Publisher.UserName
         </dd>
+        @if(Model.ContentFile != null)
+        {
+            <dt class="col-sm-2">
+                Dosya
+            </dt>
+            <dd class="col-sm-10">
+                <a href="/Konferans/DownloadPaylasimFile?paylasimid=@Model.Id&konferansid=@Model.PaylasilanKonferans.Id">Dosya</a>
+            </dd>
+        }
     </dl>
 </div>
 
@@ -76,7 +85,7 @@ else
 }
 
 <div class="comment-form">
-    <form asp-action="AddCommentTartisma" asp-route-TartismaId = "@Model.Id" method="post">
+    <form asp-action="AddCommentTartisma" asp-route-TartismaId="@Model.Id" method="post">
         <textarea name="yorumYazi" placeholder="Yorumunuz..." required></textarea>
         <button type="submit">Yorum Ekle</button>
     </form>

@@ -63,6 +63,8 @@ namespace KonferansPortal.Controllers
                 return NotFound();
             }
             var result = await CheckClaims((int)id);
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+            await _userManager.AddClaimsAsync(currentUser, result);
             var konferans = await _context.Konferanslar.Include(k => k.Katilimcilar).Include(k => k.Egitmenler)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (result == null || konferans == null)
@@ -151,6 +153,7 @@ namespace KonferansPortal.Controllers
         {
             return View();
         }
+
         [Authorize(Policy = "IsEgitmen")]
         [HttpPost]
         public async Task<IActionResult> PaylasimEkle(int id, string Title, string? Content, IFormFile file)
@@ -160,8 +163,9 @@ namespace KonferansPortal.Controllers
                 Title = Title,
                 Content = Content,
                 ContentFile = file != null ? GetByteArrayFromFile(file) : null,
-                Date = DateTime.UtcNow,
+                Date = DateTime.Now,
                 Publisher = _context.Uyeler.FirstOrDefault(u => u.Email == User.Identity.Name),
+                Extension = System.IO.Path.GetExtension(file.FileName),
                 PaylasilanKonferans = await _context.Konferanslar.FirstAsync(k => k.Id == id)
             };
             var result = await _context.Konferanslar.Include(k => k.Paylasimlar).FirstAsync(k => k.Id == id);
@@ -177,8 +181,38 @@ namespace KonferansPortal.Controllers
             _context.Konferanslar.Update(result);
 
             await _context.SaveChangesAsync();
-            await CheckClaims(id);
+            var res= await CheckClaims((int)id);
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+            await _userManager.AddClaimsAsync(currentUser, res);
             return RedirectToAction("KonferansMainView", new { id = id });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPaylasimFile(int konferansid, int paylasimid)
+        {
+            var konferans = await _context.Konferanslar.Include(k => k.Paylasimlar).FirstOrDefaultAsync(k => k.Id == konferansid);
+            if (konferans != null && konferans.Paylasimlar != null && konferans.Paylasimlar.FirstOrDefault(p => p.Id == paylasimid) != null)
+            {
+                var paylasim = konferans.Paylasimlar.FirstOrDefault(p => p.Id == paylasimid);
+
+                if (paylasim != null && paylasim.ContentFile != null)
+                {
+                    return File(paylasim.ContentFile, "application/octet-stream", "paylasim" + paylasimid + paylasim.Extension);
+                }
+            }
+            return null;
+
+        }
+
+
+        public async Task<string> DownloadPaylasimFile(int paylasimid, int konferansid)
+        {
+
+            var url = Url.Action("GetPaylasimFile", "File", new { paylasimid = paylasimid }, Request.Scheme);
+            if(url != null)
+                return url;
+            return null;
+
         }
         private byte[] GetByteArrayFromFile(IFormFile file)
         {
@@ -209,7 +243,7 @@ namespace KonferansPortal.Controllers
         {
             if (ModelState.IsValid)
             {
-                var currentUser = await _userManager.GetUserAsync(User);
+                var currentUser = await _context.Uyeler.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
                 var konferans = await _context.Konferanslar.Include(k => k.Tartismalar).FirstOrDefaultAsync(k => k.Id == model.KonferansId);
                 if (konferans == null)
                 {
@@ -264,7 +298,7 @@ namespace KonferansPortal.Controllers
             {
                 return NotFound();
             }
-            Tartisma tartisma = konferans.Tartismalar.FirstOrDefault(t => t.Id == id);
+            Tartisma tartisma = _context.Tartisma.Include(t=> t.Publisher).Include(t=> t.Yorumlar).FirstOrDefault(t => t.Id == id);
 
             if (tartisma == null)
             {
@@ -363,7 +397,16 @@ namespace KonferansPortal.Controllers
         public async Task<IActionResult> GetOnayBekleyenler(int konferansId)
         {
             var konferans = await _context.Konferanslar.Include(k=> k.OnKayitListe).ThenInclude(o => o.uye).FirstOrDefaultAsync(k => k.Id == konferansId);
-            var uyeList = konferans.OnKayitListe.Select(o => o.uye).ToList();
+            var uyeList = konferans.OnKayitListe.Select(o => new
+            {
+                o.uye.Id,
+                o.uye.Name,
+                o.uye.Surname,
+                o.uye.UserName,
+                o.konferans,
+                o.dekontFile
+            }).ToList();
+            //var uyeList = konferans.OnKayitListe.Select(o => o.uye).ToList();
             var options = new JsonSerializerOptions
             {
                 ReferenceHandler = ReferenceHandler.Preserve
@@ -373,25 +416,28 @@ namespace KonferansPortal.Controllers
             
         }
 
-        public async Task<FileResult> DownloadDekont(int konferansId, int kayitId)
+        public async Task<FileResult> DownloadDekont(string konferansid, string uyeid)
         {
-            var konferans = await _context.Konferanslar.Include(k => k.OnKayitListe).FirstOrDefaultAsync(k => k.Id == konferansId);
+            //uyeid = uyeid[1..];
+            int konferansId = Convert.ToInt32(konferansid);
+            var konferans = await _context.Konferanslar.Include(k => k.OnKayitListe).ThenInclude(o => o.uye).FirstOrDefaultAsync(k => k.Id == konferansId);
             if (konferans != null && konferans.OnKayitListe != null)
             {
-                var uye = konferans.OnKayitListe.First(u => u.Id == kayitId);
+                var uye = konferans.OnKayitListe.First(u => u.uye.Id == uyeid);
 
                 if (uye != null && uye.dekontFile != null)
                 {
-                    return File(uye.dekontFile, "application/octet-stream", "dekont${uyeId}.pdf");
+                    return File(uye.dekontFile, "application/octet-stream", "dekont${username}.pdf");
                 }
             }
 
             return null;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> OnKayitOnayla(int konferansId, int kayitId)
+        [HttpGet]
+        public async Task<IActionResult> OnKayitOnayla(int konferansid, string kayitid)
         {
+            int konferansId = Convert.ToInt32(konferansid);
             var konferans = await _context.Konferanslar.Include(k => k.Katilimcilar)
                 .Include(k => k.OnKayitListe).ThenInclude(o => o.uye).FirstOrDefaultAsync(k => k.Id == konferansId);
             if(konferans.Capacity <= konferans.Katilimcilar.Count)
@@ -399,7 +445,7 @@ namespace KonferansPortal.Controllers
                 
                 return Json(false);
             }
-            var uye = konferans.OnKayitListe.First(u => u.Id == kayitId);
+            var uye = konferans.OnKayitListe.First(u => u.uye.Id == kayitid);
 
             konferans.Katilimcilar.Add(uye.uye);
             konferans.OnKayitListe.Remove(uye);
@@ -414,12 +460,69 @@ namespace KonferansPortal.Controllers
             return Json(konferans?.OnKayitListe);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> DekontYukle(int konferansId, IFormFile file)
+        {
+            
+            var konferans = await _context.Konferanslar.Include(k => k.OnKayitListe).ThenInclude(o => o.uye).FirstOrDefaultAsync(k => k.Id == konferansId);
+            if (konferans != null)
+            {
+                var onKayit = konferans.OnKayitListe.Find(o => User.Identity.Name == o.uye.UserName);
+                onKayit.dekontFile = GetByteArrayFromFile(file);
+                _context.Konferanslar.Update(konferans);
+                await _context.SaveChangesAsync();
+                return Json("Succeed");
+            }
+            
+            return null;
+        }
+        [HttpPost]
+        public async Task<IActionResult> AddCommentTartisma(string yorumYazi, int TartismaId)
+        {
+            if (string.IsNullOrWhiteSpace(yorumYazi))
+            {
+                return BadRequest("yorum boş olamaz");
+            }
+
+            var comment = new Yorum
+            {
+                Content = yorumYazi,
+                Date = DateTime.Now,
+                Publisher = _context.Uyeler.FirstOrDefault(u => u.Email == User.Identity.Name)
+            };
+
+
+            var tartisma = await _context.Tartisma.Include(t=> t.Yorumlar).Include(t=> t.Konferans).FirstOrDefaultAsync(t=> t.Id == TartismaId);
+            tartisma.Yorumlar.Add(comment);
+            _context.Tartisma.Update(tartisma);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("TartismaDetails", new { id = TartismaId, konferansId = tartisma.Konferans.Id});
+
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PaylasimDetails(int pId, int kId)
+        {
+            var konferans = await _context.Konferanslar.Include(k => k.Paylasimlar).FirstOrDefaultAsync(k => k.Id == kId);
+            if (konferans == null || konferans.Paylasimlar == null)
+            {
+                return NotFound();
+            }
+            Paylasim paylasim = _context.Paylasim.Include(t => t.Publisher).Include(t => t.Yorumlar).Include(p=> p.PaylasilanKonferans).
+                FirstOrDefault(t => t.Id == pId);
+
+            if (paylasim == null)
+            {
+                return NotFound();
+            }
+            return View(paylasim);
+        }
         private bool KonferansExists(int id)
         {
             return _context.Konferanslar.Any(e => e.Id == id);
         }
 
-        public async Task<Konferans> CheckClaims(int id)
+        public async Task<List<Claim>> CheckClaims(int id)
         {
 
             var konferans = await _context.Konferanslar.Include(k => k.Katilimcilar).Include(k => k.Egitmenler).Include(k => k.OnKayitListe).ThenInclude(o => o.uye)
@@ -434,7 +537,7 @@ namespace KonferansPortal.Controllers
                 var isEgitmenClaim = claims.FirstOrDefault(c => c.Type == "IsEgitmen");
                 var isOnKayitliClaim = claims.FirstOrDefault(c => c.Type == "IsOnKayitli");
 
-                bool[] boolArray = [false, false];
+                bool[] boolArray = [false, false, false];
                 if (isEgitmenOrKatilimciClaim != null)
                 {
                     await _userManager.RemoveClaimAsync(currentUser, isEgitmenOrKatilimciClaim);
@@ -462,20 +565,22 @@ namespace KonferansPortal.Controllers
                 else
                     boolArray[1] = false;
 
-                if (konferans.OnKayitListe != null && konferans.OnKayitListe.Find(o => o.uye.UserName == currentUser.Email) != null)
-                {
-                    await _userManager.AddClaimAsync(currentUser, new Claim("IsOnKayitli", "true"));
-                }
+                if (konferans.OnKayitListe != null && konferans.OnKayitListe.FirstOrDefault(o => o.uye.UserName == currentUser.Email) != null)
+                    boolArray[2] = true;
+                else
+                    boolArray[2] = false;
 
-                await _userManager.AddClaimsAsync(currentUser, new List<Claim>
+
+                return new List<Claim>
                 {
                     new Claim("IsEgitmenOrKatilimci", (boolArray[0] || boolArray[1]).ToString()),
                     new Claim("IsEgitmen", boolArray[0].ToString()),
-                    new Claim("IsKatilimci", boolArray[1].ToString())
-                });
+                    new Claim("IsKatilimci", boolArray[1].ToString()),
+                    new Claim("IsOnKayitli", boolArray[2].ToString())
+                };
             }
 
-            return konferans;
+            return null;
         }
 
     }
